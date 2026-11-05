@@ -1,0 +1,11 @@
+torch>=2.1
+torchaudio
+numpy
+scipy
+soundfile
+einops
+onnxruntime
+pyloudnorm
+pesq
+pystoi
+speechmos

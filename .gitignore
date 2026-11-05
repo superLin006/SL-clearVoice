@@ -1,0 +1,11 @@
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+out/
+ckpt*/
+*.wav
+*.mp3
+*.zip
+*.tar
+*.pt
