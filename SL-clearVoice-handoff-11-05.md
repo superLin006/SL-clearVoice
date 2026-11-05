@@ -300,6 +300,17 @@ SQUIM（参考型）：UL-UNAS 4.389/4.288，B 4.269/4.291，CRM 4.390/4.286。
 - 结论：**真实 RIR 混入不能单独带来实测段/41s 的提升，且会遗忘模拟域；不采用。** 若要继续数据路线，应改为真实房间的 far-field + close-talk 配对，而不是通用 real RIR。
 - 数据与 checkpoint 已清理，未保留。
 
+## 9.9 C++ 6ch online WPE（2026-11-05）
+
+- 源码：`src/spatial/wpe_online_cpp.cpp`；构建：`scripts/build_wpe_online_board.sh`（aarch64 静态链接，OpenMP）。
+- 板端 RK3588：
+  - 单线程 6ch online WPE+DS：RTF 0.307
+  - OpenMP 4 线程：RTF 0.102
+  - 加 UL-UNAS 0.141 + CRM2 0.493：整链约 **0.73 RTF**
+- 41s 质量（接 UL-UNAS+CRM+v4）：1.425 / 0.766 / 2.55 / 2.84 / 3.81；离线 6ch 链 1.472 / 0.776 / 2.72 / 3.00 / 3.91；B 1.468 / 0.776 / 2.82 / 3.21 / 3.72。
+- 单麦/坏通道：`channels<6` 或通道 RMS 低于中位数 5% 时自动旁路空间链，输出第一通道；产品侧应路由到单通道 `UL-UNAS→CRM→v4`。不要将单麦复制成 6 路喂 WPE/波束，协方差退化会产生失真。
+- 结论：C++ 版已把 6ch online WPE 做到可实时；但 online/causal 质量低于离线 6ch WPE，短片段更明显。离线文件后处理仍建议离线链。
+
 ## 10. 已知限制与下一步
 
 1. **综合没有超过 B**：41s 上 B 更好；实测距离段 CRM 的 PESQ/STOI/BAK 更好，B 的 DNS SIG/OVRL 更高。
