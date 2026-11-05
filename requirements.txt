@@ -9,3 +9,4 @@ pyloudnorm
 pesq
 pystoi
 speechmos
+nara-wpe

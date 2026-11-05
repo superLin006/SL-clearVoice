@@ -244,6 +244,30 @@ SQUIM（参考型）：UL-UNAS 4.389/4.288，B 4.269/4.291，CRM 4.390/4.286。
 - D 盘释放约 4 GB：删除旧的 60k/24k 数据、Resemble/ClearVoice/Micro/RKNN 探针、旧试听中间件；保留 200k 主数据、实测录音、最终 A/B、基座/B/ONNX。
 - 清理时发现 val 的 UL-UNAS 输入依赖旧 `ulunas_stage1`，已重新生成 600 条 val，训练验证集恢复正常。
 
+## 9.6 2026-11-05 多麦空间链（新突破）
+
+在 1/3/5 m 实测段上，第一次做到各距离都超过单通道 B 的 PESQ/STOI/BAK：
+
+```
+6ch WPE（nara_wpe, taps=10, delay=3, iterations=3）
+  -> 延迟求和波束（R=42 mm, DOA=90°）
+  -> UL-UNAS -> CRM v2 -> v4
+```
+
+| 方法（均接 v4） | PESQ | STOI | DNS OVRL/SIG/BAK |
+|---|---|---|---|
+| B（单通道） | 1.309 | 0.740 | 2.624 / 3.532 / 2.791 |
+| 单通道 CRM v2 | 1.380 | 0.758 | 2.387 / 2.753 / 3.481 |
+| DS + UL-UNAS + CRM（无 WPE） | 1.409 | 0.757 | 2.459 / 2.824 / 3.582 |
+| **WPE + DS + UL-UNAS + CRM** | **1.559** | **0.782** | **2.755** / 3.097 / **3.771** |
+
+- 分距离 PESQ：1 m 1.861（B 1.483）、3 m 1.475（B 1.265）、5 m 1.340（B 1.181）。
+- B 的 SIG 仍更高（3.532 vs 3.097），但多麦链的 PESQ/STOI/OVRL/BAK 更好；听感需要用户确认。
+- 消融：去掉 WPE 后 PESQ 从 1.559 掉到 1.409，WPE 是主要增益来源；MVDR 波束比 DS 差（1.322/0.717）。
+- 关键坑：`nara_wpe` STFT 输出 `(M,T,F)`，WPE 需要 `(F,M,T)`；旧代码轴序错误，导致 WPE 输出与输入不相关。WPE 输出与输入时间对齐，不要额外 shift。
+- 代码：`src/spatial/wpe_ds.py`、`src/spatial/run_spatial_chain.py`；试听：`<SL_DATA_ROOT>/out/ab_spatial`。
+- **限制**：WPE 目前是离线整段迭代，实时部署需要 block/online WPE；评估只有 1/3/5 m 三段，需再用 8ch 41s 和更多房间验证。
+
 ## 10. 已知限制与下一步
 
 1. **综合没有超过 B**：41s 上 B 更好；实测距离段 CRM 的 PESQ/STOI/BAK 更好，B 的 DNS SIG/OVRL 更高。
