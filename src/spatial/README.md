@@ -39,3 +39,23 @@ python run_spatial_chain.py \
   --ulunas-ckpt /path/to/model_trained_on_dns3.tar \
   --crm-ckpt /path/to/crm_ep7.pt
 ```
+
+
+## Online WPE / 板端 RTF（2026-11-05）
+
+| 处理（RK3588, ORT 1.18, 4 线程） | RTF |
+|---|---|
+| 6ch online WPE（纯 Python/NumPy） | 1.576 |
+| 6ch online WPE + DS | 1.583 |
+| DS 波束 | 0.007 |
+| DS + 单通道 online WPE | 0.06 |
+| UL-UNAS streaming | 0.141 |
+| CRM2 core | 0.493 |
+| **DS + mono online WPE + UL-UNAS + CRM2（合计估计）** | **约 0.69** |
+
+- 6ch online WPE 在板端 CPU 上不能实时；6ch + 下游整链约 2.2 RTF。
+- 实时推荐：`DS 波束 -> 单通道 online WPE -> UL-UNAS -> CRM2`，板端合计约 0.69 RTF。
+- 质量对比（41s / 实测 1/3/5m，均接 v4）：
+  - 41s：离线 6ch WPE 链 1.472/0.776/2.72/3.00/3.91；online 1.408/0.766/2.56/2.88/3.77；B 1.468/0.776/2.82/3.21/3.72。
+  - 1/3/5m：离线 6ch WPE 链 1.559/0.782/2.755/3.097/3.771；online 1.374/0.749/2.351/2.685/3.574；B 1.309/0.740/2.624/3.532/2.791。
+- 结论：离线 6ch WPE 质量最好；实时走 DS+mono online WPE，质量优于单通道 CRM、部分指标仍低于 B。若要把 6ch online WPE 做进实时，需要用 C/C++ 重写并优化矩阵运算。

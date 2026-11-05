@@ -268,6 +268,27 @@ SQUIM（参考型）：UL-UNAS 4.389/4.288，B 4.269/4.291，CRM 4.390/4.286。
 - 代码：`src/spatial/wpe_ds.py`、`src/spatial/run_spatial_chain.py`；试听：`<SL_DATA_ROOT>/out/ab_spatial`。
 - **限制**：WPE 目前是离线整段迭代，实时部署需要 block/online WPE；评估只有 1/3/5 m 三段，需再用 8ch 41s 和更多房间验证。
 
+## 9.7 Online WPE 与板端 RTF（2026-11-05）
+
+板端 RK3588 + ORT 1.18（4 线程）实测：
+
+| 处理 | RTF |
+|---|---|
+| 6ch online WPE（Python/NumPy） | 1.576 |
+| 6ch online WPE + DS | 1.583 |
+| DS 波束 | 0.007 |
+| DS + 单通道 online WPE | 0.06 |
+| UL-UNAS streaming | 0.141 |
+| CRM2 core | 0.493 |
+| **DS + mono online WPE + UL-UNAS + CRM2（合计估计）** | **0.69** |
+
+- 6ch online WPE 单独 1.576，整链约 2.2，不能实时；要实时必须把 6ch WPE 用 C/C++ 重写或换更轻的 WPE。
+- 实时折中：`DS 波束 -> 单通道 online WPE -> UL-UNAS -> CRM2`，板端合计约 0.69 RTF；质量：
+  - 41s：1.408/0.766/2.56/2.88/3.77（B 1.468/0.776/2.82/3.21/3.72）
+  - 1/3/5m：1.374/0.749/2.351/2.685/3.574（B 1.309/0.740/2.624/3.532/2.791）
+- 离线 6ch WPE 链仍是质量上限：41s 1.472/0.776/2.72/3.00/3.91；1/3/5m 1.559/0.782/2.755/3.097/3.771。
+- 建议双轨：文件后处理用离线 6ch WPE；实时用 DS+mono online WPE+UL+CRM（RTF≈0.69）。若必须实时且要离线质量，下一步用 C/C++ 实现 6ch online WPE。
+
 ## 10. 已知限制与下一步
 
 1. **综合没有超过 B**：41s 上 B 更好；实测距离段 CRM 的 PESQ/STOI/BAK 更好，B 的 DNS SIG/OVRL 更高。
