@@ -8,7 +8,7 @@ from pystoi import stoi
 from speechmos import dnsmos
 
 SR = 16000
-DATA_ROOT = os.environ.get('SL_DATA_ROOT', '<SL_DATA_ROOT>')
+DATA_ROOT = os.environ.get('SL_DATA_ROOT', './data')
 REF = f'{DATA_ROOT}/out/ref_speech_41s.wav'
 
 

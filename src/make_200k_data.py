@@ -10,14 +10,16 @@ from ulunas_dataset import RIRNoiseDataset
 
 shard = int(sys.argv[1])
 nshard = int(sys.argv[2])
-out = '<TRAIN_ROOT>/distill_200k'
+DATA_ROOT = os.environ.get('CRM_DATA_ROOT', '/data')
+RIR_ROOT = os.environ.get('CRM_RIR_ROOT', '/data/RIRS_NOISES')
+out = os.environ.get('CRM_200K_OUT', '/data/distill_200k')
 os.makedirs(os.path.join(out, 'noisy'), exist_ok=True)
 os.makedirs(os.path.join(out, 'dry'), exist_ok=True)
 
-thchs = sorted(glob.glob('<TRAIN_ROOT>/ulunas_data/data_thchs30/train/*.wav'))
-ais = sorted(glob.glob('<TRAIN_ROOT>/ulunas_data/train/wav/*/*.wav'))
-rirs = sorted(glob.glob('<RIR_ROOT>/RIRS_NOISES/simulated_rirs/**/*.wav', recursive=True))
-noises = sorted(glob.glob('<TRAIN_ROOT>/ulunas_data/musan/noise/**/*.wav', recursive=True))
+thchs = sorted(glob.glob(f'{DATA_ROOT}/data_thchs30/train/*.wav'))
+ais = sorted(glob.glob(f'{DATA_ROOT}/train/wav/*/*.wav'))
+rirs = sorted(glob.glob(f'{RIR_ROOT}/simulated_rirs/**/*.wav', recursive=True))
+noises = sorted(glob.glob(f'{DATA_ROOT}/musan/noise/**/*.wav', recursive=True))
 base = thchs + ais
 n = 200000
 files = [base[i % len(base)] for i in range(n)]

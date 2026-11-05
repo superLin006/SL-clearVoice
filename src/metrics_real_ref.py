@@ -6,7 +6,7 @@ import soundfile as sf
 from pesq import pesq
 from pystoi import stoi
 
-DATA_ROOT = os.environ.get('SL_DATA_ROOT', '<SL_DATA_ROOT>')
+DATA_ROOT = os.environ.get('SL_DATA_ROOT', './data')
 SEGS = ['seg1m', 'seg3m', 'seg5m']
 REFS = [f'{DATA_ROOT}/out/distance_segments/seg_{s[3:]}_ref.wav' for s in SEGS]
 

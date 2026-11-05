@@ -28,8 +28,8 @@ def spec_l1(est, ref, model):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument('--root', default='<TRAIN_ROOT>/distill_data3s3')
-    ap.add_argument('--out_dir', default='<TRAIN_ROOT>/ulunas_train_code/ckpt_crm')
+    ap.add_argument('--root', default=os.environ.get('CRM_ROOT', '/data/distill_200k_train'))
+    ap.add_argument('--out_dir', default=os.environ.get('CRM_OUT', './ckpt_crm'))
     ap.add_argument('--epochs', type=int, default=12)
     ap.add_argument('--batch', type=int, default=16)
     ap.add_argument('--lr', type=float, default=3e-4)

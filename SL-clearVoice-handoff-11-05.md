@@ -114,14 +114,14 @@ bash scripts/v4_post.sh out/full41_models/<tag>.wav out/full41_audition/<tag>_v4
 python src/metrics_full41.py out/full41_audition/<tag>_v4exact.wav
 
 # 公平集
-SL_DATA_ROOT=<SL_DATA_ROOT> python src/metrics_fair.py <tag>_rev <tag>_rev_noise
+SL_DATA_ROOT=/path/to/data python src/metrics_fair.py <tag>_rev <tag>_rev_noise
 
 # 实测 1/3/5m
 python src/metrics_real.py <tag>
 python src/metrics_real_ref.py <tag>
 ```
 
-- `SL_DATA_ROOT` 默认 `<SL_DATA_ROOT>`，可在新环境覆盖。
+- `SL_DATA_ROOT` 默认 `./data`，可在新环境覆盖。
 - PESQ/STOI/DNSMOS 在 WSL 的 `dl` 环境；SQUIM 需要 torchaudio 权重。
 - 所有比较必须同响度、同 v4 条件；B 必须 NVIDIA-only。
 
@@ -243,7 +243,7 @@ models/
 ## 12. 复现注意事项
 
 - 数据准备脚本里的 `<TRAIN_ROOT>/...` 与 `<RIR_ROOT>/RIRS_NOISES` 是内部服务器/WSL 路径，迁移时先改路径。
-- `metrics_*` 支持 `SL_DATA_ROOT` 环境变量，默认 `<SL_DATA_ROOT>`。
+- `metrics_*` 支持 `SL_DATA_ROOT` 环境变量，默认 `./data`。
 - v4 脚本可用 `FF=/path/to/ffmpeg bash scripts/v4_post.sh in.wav out.wav` 覆盖 ffmpeg。
 - 训练/推理都必须保持 RMS 0.04 归一化，否则 CRM 输出会偏轻或过重。
 - 比较时统一接 v4、统一响度；B 必须是 NVIDIA-only。

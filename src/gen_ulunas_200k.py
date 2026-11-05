@@ -11,14 +11,14 @@ from ulunas import ULUNAS
 
 shard = int(sys.argv[1])
 nshard = int(sys.argv[2])
-root = '<TRAIN_ROOT>/distill_200k'
+root = os.environ.get('CRM_200K_OUT', '/data/distill_200k')
 out = os.path.join(root, 'ulunas')
 os.makedirs(out, exist_ok=True)
 files = sorted(glob.glob(os.path.join(root, 'noisy', '*.wav')))
 files = files[shard * len(files) // nshard:(shard + 1) * len(files) // nshard]
 
 model = ULUNAS().cuda().eval()
-ck = torch.load('<TRAIN_ROOT>/ulunas_train_code/model_trained_on_dns3.tar', map_location='cuda')
+ck = torch.load(os.environ.get('ULUNAS_CKPT', '/data/model_trained_on_dns3.tar'), map_location='cuda')
 model.load_state_dict(ck['model'] if isinstance(ck, dict) and 'model' in ck else ck)
 bs = 32
 for st in range(0, len(files), bs):

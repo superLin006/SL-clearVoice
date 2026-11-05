@@ -9,7 +9,7 @@ import torch
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from crm_model import CRMFilterV2
 
-DATA_ROOT = os.environ.get('SL_DATA_ROOT', '<SL_DATA_ROOT>')
+DATA_ROOT = os.environ.get('SL_DATA_ROOT', './data')
 ROOT = f'{DATA_ROOT}/out/fair_eval'
 SR = 16000
 CKPT = sys.argv[1]

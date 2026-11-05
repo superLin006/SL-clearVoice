@@ -1,9 +1,9 @@
 import glob
 import os
 
-SRC = '<TRAIN_ROOT>/distill_200k'
-D3 = '<TRAIN_ROOT>/distill_data3s3'
-OUT = '<TRAIN_ROOT>/distill_200k_train'
+SRC = os.environ.get('CRM_200K_OUT', '/data/distill_200k')
+D3 = os.environ.get('CRM_3S3', '/data/distill_data3s3')
+OUT = os.environ.get('CRM_ROOT', '/data/distill_200k_train')
 for sub in ('noisy', 'teacher', 'dry'):
     os.makedirs(f'{OUT}/{sub}', exist_ok=True)
 

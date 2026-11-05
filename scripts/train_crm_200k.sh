@@ -1,8 +1,8 @@
 #!/bin/bash
 set -euo pipefail
 # 200k CRM v2 训练启动脚本（按需改 ROOT/OUT/GPUS）
-ROOT=${ROOT:-<TRAIN_ROOT>/distill_200k_train}
-OUT=${OUT:-<TRAIN_ROOT>/ulunas_train_code/ckpt_crm_200k}
+: "${ROOT:?set ROOT to 200k train root}"
+: "${OUT:?set OUT to checkpoint dir}"
 GPUS=${GPUS:-2,3,4,5,6,7}
 NPROC=${NPROC:-6}
 EPOCHS=${EPOCHS:-12}

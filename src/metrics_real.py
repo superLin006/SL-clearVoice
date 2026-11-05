@@ -6,7 +6,7 @@ import soundfile as sf
 from speechmos import dnsmos
 
 SR = 16000
-DATA_ROOT = os.environ.get('SL_DATA_ROOT', '<SL_DATA_ROOT>')
+DATA_ROOT = os.environ.get('SL_DATA_ROOT', './data')
 SEGS = ['seg1m', 'seg3m', 'seg5m']
 
 
