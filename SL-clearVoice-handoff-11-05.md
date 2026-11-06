@@ -321,6 +321,18 @@ SQUIM（参考型）：UL-UNAS 4.389/4.288，B 4.269/4.291，CRM 4.390/4.286。
 - 尝试逐帧/分段 DOA 跟踪：当前 GCC-PHAT 跟踪会被噪声/多说话人带偏，002 动态波束 1.822/2.116/3.294，低于固定 1.858/2.138/3.351，暂不采用；需要更稳的分段 DOA 或多波束。
 - C++ 已支持 8 麦配置：`./wpe_online_cpp in out 6 8 0,1,5,4,2,3 294 0.0476`，板端 RTF 仍约 0.10。
 
+## 9.11 高噪分支：MossFormerGAN 条件预处理（2026-11-06）
+
+- 新会议室 001/002 的噪声很强，单纯 UL-UNAS/CRM/8 麦空间链提升有限；其他流程已验证 **MossFormerGAN_SE_16K -> UL-UNAS -> CRM base** 对高噪输入有效。
+- 该 MGan 只作为**高噪输入的离线预处理**，不进入 B 的定义（B 仍是 UL-UNAS→NVIDIA→v4，不含 MGan）。
+- 新旧 final DNS（v4/处理后）：
+  - 000 干净：UL-UNAS→FSMN/CRM 约 3.16/3.10 OVRL
+  - 001 高噪：raw/UL/CRM 约 1.5–1.7 OVRL；MGan→UL→CRM **2.65/2.94/3.87**
+  - 002 噪声：raw/UL/CRM 约 1.8–2.0 OVRL；MGan→UL→CRM **2.71/3.02/3.92**
+- 决策：输入先做 DNSMOS QC；`OVRL < 2.5` 走高噪分支 `MGan→UL-UNAS→CRM`，否则走 `UL-UNAS→CRM`（或已有 FSMN）；8 麦空间链保留给干净/单方向场景。
+- MGan 是离线/较重模型，实时链路不能直接用；实时仍走 UL-UNAS+CRM 或后续轻量学生。
+- ASR 转写已写入 `data/asr/`（Qwen3-ASR-0.6B，20s 分块）；001/002 的 ASR 仍受噪声/多说话人影响，需以听感和参考文本共同判断。
+
 ## 10. 已知限制与下一步
 
 1. **综合没有超过 B**：41s 上 B 更好；实测距离段 CRM 的 PESQ/STOI/BAK 更好，B 的 DNS SIG/OVRL 更高。
