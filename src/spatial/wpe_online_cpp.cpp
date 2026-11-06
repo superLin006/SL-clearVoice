@@ -13,6 +13,9 @@
 using cpx = std::complex<float>;
 static constexpr int NFFT = 512, HOP = 256, NF = NFFT / 2 + 1;
 static constexpr int TAPS = 10, DELAY = 3, D = 6;
+static int N_POS = 8;
+static int ORDER[D] = {0, 1, 5, 4, 2, 3};
+static float THETA = 294.0f, RADIUS = 0.0476f;
 static constexpr int BUF = TAPS + DELAY + 1;
 static constexpr float PI = 3.14159265358979323846f;
 static constexpr float ALPHA = 0.9999f;
@@ -208,6 +211,18 @@ int main(int argc, char** argv) {
         return 1;
     }
     int ch = argc > 3 ? std::atoi(argv[3]) : D;
+    if (argc > 4) N_POS = std::atoi(argv[4]);
+    if (argc > 5) {
+        std::string s = argv[5];
+        for (int d = 0; d < D; ++d) {
+            auto p = s.find(',');
+            ORDER[d] = std::atoi(s.substr(0, p).c_str());
+            if (p == std::string::npos) break;
+            s = s.substr(p + 1);
+        }
+    }
+    if (argc > 6) THETA = std::atof(argv[6]);
+    if (argc > 7) RADIUS = std::atof(argv[7]);
     auto inter = read_raw(argv[1]);
     int frames = (int)inter.size() / ch;
     std::vector<float> mono(frames);
