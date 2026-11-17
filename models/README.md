@@ -1,5 +1,7 @@
 # models
 
+[RK3588 实时链路固定模型](rknn/live/README.md)
+
 ## crm2_base.onnx
 
 - 来源：`<TRAIN_ROOT>/ulunas_train_code/ckpt_crm_200k/crm_ep7.pt`

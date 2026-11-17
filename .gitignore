@@ -9,3 +9,5 @@ ckpt*/
 *.zip
 *.tar
 *.pt
+/data/
+*.pcm

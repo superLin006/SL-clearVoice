@@ -2,11 +2,14 @@
 
 实时去噪声、去混响。
 
-## 当前状态（2026-11-05）
+## RK3588 实时基线（2026-11-17）
 
-- 实时主线：`UL-UNAS → CRM v2 → v4`
-- 离线高质基线：`UL-UNAS → NVIDIA（50 步）→ v4`（B，不含 MGan）
-- 详细交接：[SL-clearVoice-handoff-11-05.md](SL-clearVoice-handoff-11-05.md)
+**UL-UNAS → NVIDIA 原权重单步 → 实时 v4**。双核 NPU 全链 PCM 回放 P95 约 191 ms。
+
+- [构建和板端运行](scripts/board/LIVE.md)
+- [固定模型、校验值和上游许可](models/rknn/live/README.md)
+
+[项目交接文档](SL-clearVoice-handoff-11-05.md)
 
 ## 仓库内容
 
