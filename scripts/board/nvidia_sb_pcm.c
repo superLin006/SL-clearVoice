@@ -63,7 +63,6 @@ typedef struct {
     fftwf_complex bins[BINS];
     fftwf_plan forward, inverse;
     float input[2*BINS*MAX_FRAMES];
-    uint32_t rng;
 } Pipeline;
 
 static void init(Pipeline *p, const char *model, rknn_core_mask cores) {
@@ -95,13 +94,6 @@ static void init(Pipeline *p, const char *model, rknn_core_mask cores) {
             if (i>=0 && i<p->window) p->synthesis_gain[i]+=p->hann[j]*p->hann[j];
         }
     for (int i=0;i<p->window;++i) p->synthesis_gain[i]=1.0f/(FFT*p->synthesis_gain[i]);
-    p->rng=1;
-}
-
-static float uniform(Pipeline *p) {
-    uint32_t x=p->rng;
-    x^=x<<13; x^=x>>17; x^=x<<5; p->rng=x;
-    return ((x>>8)+0.5f)*(1.0f/16777216);
 }
 
 static double enhance(Pipeline *p,const int16_t *pcm,int count,float *audio) {
@@ -137,10 +129,9 @@ static double enhance(Pipeline *p,const int16_t *pcm,int count,float *audio) {
         for (int f=0;f<BINS;++f) {
             int out_re=index_of(p->frames,p->out_nhwc,f,k,0),out_im=index_of(p->frames,p->out_nhwc,f,k,1);
             int in_re=index_of(p->frames,p->in_nhwc,f,k,0),in_im=index_of(p->frames,p->in_nhwc,f,k,1);
-            float amount=0.00632428797f*sqrtf(-logf(uniform(p)));
-            float angle=2*pi*uniform(p);
-            float re=(0.0000331757874f*p->input[in_re]+0.9999668f*estimate[out_re]+amount*cosf(angle))/spectral_scale;
-            float im=(0.0000331757874f*p->input[in_im]+0.9999668f*estimate[out_im]+amount*sinf(angle))/spectral_scale;
+            /* Keep the original one-step mean; Gaussian sampling is disabled. */
+            float re=(0.0000331757874f*p->input[in_re]+0.9999668f*estimate[out_re])/spectral_scale;
+            float im=(0.0000331757874f*p->input[in_im]+0.9999668f*estimate[out_im])/spectral_scale;
             float power=sqrtf(re*re+im*im);
             p->bins[f][0]=re*power;
             p->bins[f][1]=im*power;
@@ -215,13 +206,15 @@ int main(int argc,char **argv) {
     Pipeline *p=calloc(1,sizeof(*p));
     if (!p) fail("Could not allocate FFT state");
     init(p,argv[1],cores);
+    const char *expected_frames = getenv("SB_EXPECT_FRAMES");
+    if (expected_frames && p->frames != parse_int(expected_frames,MAX_FRAMES))
+        fail("RKNN frame count does not match the configured profile");
     int fresh = p->window - history;
     int stride = fresh - overlap;
     if (stride <= 0 || overlap > stride) fail("Invalid window options");
     int16_t pcm[MAX_WINDOW]={0}, pending_dry[MAX_WINDOW];
     float audio[MAX_WINDOW],pending[MAX_WINDOW];
     enhance(p,pcm,p->window,audio);
-    p->rng=1;
 
     double sum=0,npu_sum=0,max=0,queue=0,peak_queue=0,first=0;
     uint64_t read_samples=0,emitted=0;
@@ -281,7 +274,7 @@ int main(int argc,char **argv) {
     qsort(origins,blocks,sizeof(*origins),cmp);
     size_t index=(size_t)(0.95*(blocks-1));
     double p95=lags[index];
-    fprintf(stderr,"{\"frames\":%d,\"core_mask\":%d,\"dry_gain\":%.3f,\"blocks\":%zu,\"samples\":%llu,\"mean_ms\":%.3f,\"npu_mean_ms\":%.3f,"
+    fprintf(stderr,"{\"frames\":%d,\"core_mask\":%d,\"dry_gain\":%.3f,\"gaussian_sampling\":false,\"blocks\":%zu,\"samples\":%llu,\"mean_ms\":%.3f,\"npu_mean_ms\":%.3f,"
         "\"max_ms\":%.3f,\"budget_ms\":%.3f,\"rtf\":%.4f,\"over_budget\":%zu,"
         "\"max_queue_ms\":%.3f,\"input_clock_ms\":%.3f,\"first_ready_ms\":%.3f,\"p95_%s_ms\":%.3f,\"p95_origin_ms\":%.3f}\n",
         p->frames,cores,dry_gain,blocks,(unsigned long long)emitted,sum/blocks,npu_sum/blocks,max,stride/16.0,

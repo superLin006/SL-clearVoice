@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Export the release NVIDIA SB one-step estimator with the fixed T16 input."""
+"""Export a static NVIDIA SB one-step estimator for the RK3588 chain."""
 import argparse
 import copy
 import hashlib
@@ -12,7 +12,6 @@ from torch import nn
 from torch.nn import functional as F
 
 
-FRAMES = 16
 BINS = 256
 SCALE = 1 / math.sqrt(2)
 CHECKPOINT_SHA = "2490b0a61abc0f24298708cebd941fb1bb71b5bb240d0bda073c244dc965512f"
@@ -117,6 +116,7 @@ class StaticEstimator(nn.Module):
 @torch.no_grad()
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--frames", type=int, choices=(16, 32), default=16)
     parser.add_argument("checkpoint", type=Path)
     parser.add_argument("onnx", type=Path)
     args = parser.parse_args()
@@ -125,13 +125,13 @@ def main():
     torch.set_num_threads(4)
     torch.manual_seed(7)
     original = AudioToAudioModel.restore_from(str(args.checkpoint), map_location="cpu").eval()
-    original.estimator.ncsnpp.pad_time_to = FRAMES
+    original.estimator.ncsnpp.pad_time_to = args.frames
     estimator = StaticEstimator(copy.deepcopy(original.estimator)).eval()
-    probe = torch.randn(1, 2, BINS, FRAMES) * 0.25
+    probe = torch.randn(1, 2, BINS, args.frames) * 0.25
     for spectrum in (probe, torch.zeros_like(probe), torch.randn_like(probe) * 0.02):
         z = torch.complex(spectrum[:, 0:1], spectrum[:, 1:2])
         estimate, _ = original.estimator(input=torch.cat([z, z], dim=1),
-                                         input_length=torch.tensor([FRAMES]), condition=torch.ones(1))
+                                         input_length=torch.tensor([args.frames]), condition=torch.ones(1))
         reference = torch.cat([estimate.real, estimate.imag], dim=1)
         error = torch.linalg.vector_norm(estimator(spectrum) - reference)
         error /= torch.linalg.vector_norm(reference).clamp_min(1e-8)
