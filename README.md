@@ -1,11 +1,20 @@
 # SL-clearVoice
 
-## RK3588 实时基线
+## RK3588 实时语音增强
 
-**UL-UNAS → NVIDIA 原权重单步 → 实时 v4**。输入为 16 kHz 单声道 PCM。双核 NPU 的整链 PCM 回放 P95 约 191 ms。
+**UL-UNAS 降噪 → NVIDIA SB 去混响 → 实时 v4 后处理**。输入和输出均为 16 kHz、单声道、16 位小端 PCM。NVIDIA SB 使用确定性的单步均值重建。
 
-- [构建和板端运行](scripts/board/LIVE.md)
-- [固定模型、校验值和上游许可](models/rknn/live/README.md)
+| 配置 | NPU 核数 | 板端 PCM 回放 P95 | 测试录音 |
+| --- | ---: | ---: | --- |
+| T16（默认） | 2 | 191.6 ms | DUT，约 106 秒 |
+| T32（可选） | 3 | 346.8 ms | 002，约 132 秒 |
+
+板测按实时节拍回放录音，延迟从 PCM 输入算到 PCM 输出。声卡采播和会议端缓冲需另行测量。T32 在 002 的整段回放中，1,033 个处理块均在时间预算内。
+
+默认使用仓库随附的 T16 模型。构建 T32 运行包时需提供对应的 RKNN 模型。已通过 UL-UNAS 降噪的录音可在板端运行 `./run.sh --denoised`，只执行 NVIDIA SB 阶段。
+
+- [构建、板端运行和延迟测量](scripts/board/LIVE.md)
+- [模型重建、校验值和上游许可](models/rknn/live/README.md)
 
 ## 辅助工具
 
