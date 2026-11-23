@@ -1,12 +1,4 @@
-torch>=2.1
-torchaudio
+matplotlib
 numpy
 scipy
 soundfile
-einops
-onnxruntime
-pyloudnorm
-pesq
-pystoi
-speechmos
-nara-wpe

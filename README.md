@@ -1,19 +1,18 @@
 # SL-clearVoice
 
-实时去噪声、去混响。
+## RK3588 实时基线
 
-## RK3588 实时基线（2026-11-17）
-
-**UL-UNAS → NVIDIA 原权重单步 → 实时 v4**。双核 NPU 全链 PCM 回放 P95 约 191 ms。
+**UL-UNAS → NVIDIA 原权重单步 → 实时 v4**。输入为 16 kHz 单声道 PCM。双核 NPU 的整链 PCM 回放 P95 约 191 ms。
 
 - [构建和板端运行](scripts/board/LIVE.md)
 - [固定模型、校验值和上游许可](models/rknn/live/README.md)
 
-[项目交接文档](SL-clearVoice-handoff-11-05.md)
+## 辅助工具
 
-## 仓库内容
+- [多麦 WPE 和波束回放](src/spatial/README.md)
+- [同响度波形和频谱](scripts/plot_enhancement.py)。先按录音生成同响度 WAV，再用 JSON 描述同一时间轴上的各轨音频。
+- [离线 v4 对照](scripts/v4_post.sh)。用于复现原版 v4 的听感对照。
 
-- `src/`：CRM v2 模型、200k 数据生成、训练、评测、ONNX 导出
-- `scripts/v4_post.sh`：与线上一致的 v4 后处理 ffmpeg 链
-- `models/crm2_base.onnx`：CRM v2 的 ONNX 核心（复数谱进、增强复数谱出）
-- `models/README.md`：ONNX 输入输出与 checkpoint 路径
+## 本地数据
+
+原始录音保存在 `data/`。近期 DUT 试听和已验证的板端构建位于 `out/`。旧训练、模型变体和评测记录位于本地相邻的 `SL-clearVoice-archive-2026-11-17`，归档清单保留原相对路径。
