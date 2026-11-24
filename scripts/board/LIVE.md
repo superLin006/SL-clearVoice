@@ -16,10 +16,13 @@ AARCH64_CC=/path/to/aarch64-linux-gnu-gcc \
 
 构建目录内有 `bin/`、`models/` 和 `run.sh`。模型版本及许可见[模型说明](../../models/rknn/live/README.md)。
 
-默认构建使用仓库内的 T16 模型。已有 [T32 模型](../../models/rknn/live/README.md)时，可在相同依赖设置下把模型路径作为第二个参数传入。
+上面的命令打包仓库随附的 T32 模型，使用 72 ms 交叠和三个 NPU 核。拉取新版后重新构建运行包，板端按包内的 `models/profile` 选择配置。
+
+在相同依赖设置下，可显式构建低延迟的 T16 包，或传入自行编译的 T32 模型。
 
 ~~~sh
-bash scripts/board/build_live_pcm.sh out/rk3588-live-t32 /path/to/nvidia-t32-spatial-norm.rknn
+bash scripts/board/build_live_pcm.sh out/rk3588-live-t16 t16
+bash scripts/board/build_live_pcm.sh out/rk3588-live-custom /path/to/nvidia-t32-spatial-norm.rknn
 ~~~
 
 ## 板端运行

@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-# Build the RK3588 mono PCM chain for the bundled T16 or a supplied T32 model.
+# Build the RK3588 mono PCM chain with the bundled T32 model by default.
 set -euo pipefail
 
 if [ "$#" -lt 1 ] || [ "$#" -gt 2 ]; then
-    printf 'Usage: %s OUTPUT_DIRECTORY [T32_RKNN]\n' "$0" >&2
+    printf 'Usage: %s OUTPUT_DIRECTORY [t32|t16|T32_RKNN]\n' "$0" >&2
     exit 2
 fi
 
@@ -19,17 +19,21 @@ models="$(cd "$board_dir/../../models/rknn/live" && pwd)"
 cc="${AARCH64_CC:-aarch64-linux-gnu-gcc}"
 bundle="$1"
 bin="$bundle/bin"
-profile=t16
-nvidia_name=nvidia-t16-spatial-norm.rknn
-nvidia_model="$models/$nvidia_name"
-if [ "$#" -eq 2 ]; then
-    profile=t32
-    nvidia_name=nvidia-t32-spatial-norm.rknn
-    nvidia_model="$2"
-    if [ ! -f "$nvidia_model" ] || [ ! -s "$nvidia_model" ]; then
-        printf 'Missing or empty T32 model: %s\n' "$nvidia_model" >&2
-        exit 2
-    fi
+selection="${2-t32}"
+case "$selection" in
+    t16 | t32)
+        profile="$selection"
+        nvidia_model="$models/nvidia-$profile-spatial-norm.rknn"
+        ;;
+    *)
+        profile=t32
+        nvidia_model="$selection"
+        ;;
+esac
+nvidia_name="nvidia-$profile-spatial-norm.rknn"
+if [ ! -f "$nvidia_model" ] || [ ! -s "$nvidia_model" ]; then
+    printf 'Missing or empty %s model: %s\n' "$profile" "$nvidia_model" >&2
+    exit 2
 fi
 mkdir -p "$bin" "$bundle/models"
 (cd "$models" && sha256sum -c SHA256SUMS)

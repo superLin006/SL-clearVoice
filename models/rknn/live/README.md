@@ -4,7 +4,7 @@
 | --- | --- | --- |
 | ulunas_stream_simple.onnx | UL-UNAS 流式降噪，外部保存三组模型状态 | AArch64 ONNX Runtime 1.17.1，CPU |
 | nvidia-t16-spatial-norm.rknn | NVIDIA SB 一步估计器，输入 `1×2×256×16` 复数频谱 | RKNN Runtime 2.3.2，RK3588 NPU |
-| nvidia-t32-spatial-norm.rknn（按需构建） | 同模型的 32 帧输入，用于三核音质配置 | RKNN Runtime 2.3.2，RK3588 NPU |
+| [nvidia-t32-spatial-norm.rknn](nvidia-t32-spatial-norm.rknn) | 默认配置，32 帧输入，三核运行 | RKNN Runtime 2.3.2，RK3588 NPU |
 
 这里保存板端验收过的模型。部署前在本目录运行 `sha256sum -c SHA256SUMS`。
 
@@ -22,7 +22,7 @@ python scripts/npu/export_nvidia_sb_live.py /path/to/se_der_sb_16k_small.nemo ou
 python scripts/npu/build_nvidia_sb_live_rknn.py out/nvidia-t16-spatial-norm.onnx
 ~~~
 
-T32 使用同一检查点和构建工具。板测所用 T32 文件的 SHA256 为 `cfd9b689b665754a06057836eab11f0659226b60da7331aa245b2f06965131b6`。构建运行包时会为传入的模型生成校验值。
+仓库随附的 T32 来自 T32 / 72 ms 交叠的板测运行包。重建时使用同一检查点和构建工具。验收文件的 SHA256 为 `cfd9b689b665754a06057836eab11f0659226b60da7331aa245b2f06965131b6`。构建运行包时会为传入的模型生成校验值。
 
 ~~~sh
 mkdir -p out

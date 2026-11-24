@@ -12,6 +12,7 @@ usage() {
 root="$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd)"
 bin="$root/bin"
 models="$root/models"
+# The original T16 bundles did not have a profile file.
 profile=t16
 if [ -f "$models/profile" ]; then
     IFS= read -r profile < "$models/profile"

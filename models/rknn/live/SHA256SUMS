@@ -1,2 +1,3 @@
 f2e804d54d6a88f4f82f44d86c9f1cf646db2509bfca935cfbfc5fcd8cbfac3b  ulunas_stream_simple.onnx
 88a537e85fa569a6de472d2af0d3ff9c23ecbb6a972eba71a878d270c3d1650f  nvidia-t16-spatial-norm.rknn
+cfd9b689b665754a06057836eab11f0659226b60da7331aa245b2f06965131b6  nvidia-t32-spatial-norm.rknn
