@@ -2,12 +2,22 @@ __pycache__/
 *.py[cod]
 .venv/
 venv/
-out/
 ckpt*/
-*.wav
-*.mp3
+*.pt
+
+# 处理产物：不入库，仓库只保留源码、模型和原始数据清单
+out/
 *.zip
 *.tar
-*.pt
-/data/
+
+# 原始录音：体积大，不入库。用 data/raw/MANIFEST.md + SHA256SUMS 管理
+data/raw/*.wav
+data/raw/*.raw
+data/raw/*.pcm
+
+# 除清单外的所有音频
+*.wav
+*.mp3
 *.pcm
+!data/raw/MANIFEST.md
+.claude/

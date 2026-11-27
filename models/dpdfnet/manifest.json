@@ -1,0 +1,60 @@
+{
+  "source_sha256": "ce35d6025fc71df0ef10d1540e1b7916837bbfe5f6896deb744508d2cad487a9",
+  "sample_rate": 16000,
+  "hop_samples": 160,
+  "state_values": 45424,
+  "feature_normalization": "CPU FP32",
+  "neural_network": "RK3588 FP16, original weights",
+  "transforms": [
+    "batched grouped linear projections",
+    "fused GRU-cell gate projections",
+    "merged bidirectional frequency GRUs into block-diagonal forward GRUs"
+  ],
+  "files": {
+    "erb-filterbank.bin": "587f398910a6d775fcc3acfe88ceb29183c87bc171f5af0efd14378a2a633990",
+    "dpdfnet2.onnx": "ce35d6025fc71df0ef10d1540e1b7916837bbfe5f6896deb744508d2cad487a9",
+    "dpdfnet2-core.rknn": "fe2c06867a5c4d2bf2fd3f4339a76705f3df544dc716b92679c81195dc8808b6",
+    "initial-state.bin": "fe8f4b2fa728209c2eff89dd16ef39bbf1ec6abe5610e9d5f5b5a1fd0a853e79",
+    "dpdfnet2-cpu.onnx": "614ae61a58e948b594ca52d48e7712fb0435a81923a0a50ba1b7a463034eb617",
+    "dpdfnet2-cpu-int8.onnx": "06ab9942243674ab37f5064acba46e8c147450bfbb4d82cb374277b8ff42f0ad"
+  },
+  "source_url": "https://huggingface.co/Ceva-IP/DPDFNet",
+  "fft_samples": 320,
+  "spectral_delay_samples": 640,
+  "startup_hops": 5,
+  "cpu_int8": {
+    "source_cpu_sha256": "614ae61a58e948b594ca52d48e7712fb0435a81923a0a50ba1b7a463034eb617",
+    "method": "dynamic U8S8, per-channel weights",
+    "quantized_input_projections": [
+      "/model/enc/emb_gru/gru.0/grucell/Gemm",
+      "/model/erb_dec/emb_gru/gru.0/grucell/Gemm",
+      "/model/erb_dec/emb_gru/gru.1/grucell/Gemm",
+      "/model/df_dec/df_gru/gru.0/grucell/Gemm",
+      "/model/df_dec/df_gru/gru.1/grucell/Gemm"
+    ],
+    "recurrent_state_projections": "FP32",
+    "feature_normalization": "FP32",
+    "fp32_rewrite_check": {
+      "frames": 40,
+      "max_absolute_error": [
+        0.0,
+        0.0
+      ]
+    }
+  },
+  "npu_gru_direction_merge": {
+    "fp32_validation_frames": 80,
+    "max_absolute_error": [
+      0.0,
+      0.0
+    ],
+    "toolkit": "2.3.2",
+    "runtime": "2.5.0",
+    "core_onnx_sha256": "a4995e480f8a030dedc96e56d7f2d1c4670bab15721d353f46bb5d9a5fa11b79",
+    "validated_pcm_bitexact_cases": [
+      "002 132.288s",
+      "dut155 155.040s",
+      "silence-to-speech 24s"
+    ]
+  }
+}
