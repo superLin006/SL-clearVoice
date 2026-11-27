@@ -7,9 +7,9 @@ make the preceding denoiser redundant, or do they genuinely complement?
 Times are measured too, since the point is whether a variant can run in real time.
 """
 import argparse
-import importlib.util
+import nvidia_runner
+from t32_correct import DPDF, MODEL
 import os
-import sys
 import time
 
 import numpy as np
@@ -17,18 +17,16 @@ import soundfile as sf
 
 SR = 16000
 HERE = os.path.dirname(os.path.abspath(__file__))
-WORK = '/tmp/nveval'
 
 
 def load_runner():
-    spec = importlib.util.spec_from_file_location('run_nvidia', os.path.join(WORK, 'run_nvidia.py'))
-    mod = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(mod)
-    return mod
+    return nvidia_runner
 
 
 def read(p):
     x, sr = sf.read(p)
+    if sr != SR:
+        raise ValueError(f"{p}: expected 16 kHz audio, got {sr}")
     if x.ndim > 1:
         x = x.mean(1)
     return x.astype(np.float64)
@@ -58,7 +56,7 @@ def noise_floor(x):
     return float(np.median(e[sp]) - np.median(e[~sp]))
 
 
-def t32(x, model, frames=32, history_ms=48, overlap_ms=72, dry=0.025):
+def t32(x, model, frames=32, history_ms=48, overlap_ms=48, dry=0.0):
     m = load_runner()
     est = m.OnnxEstimator(model, 8)
     pipe = m.Pipeline(frames, m.hann_window(), est, 0.0)
@@ -117,12 +115,12 @@ def scores(x):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('inputs', nargs='+')
-    ap.add_argument('--t32', default=os.path.join(WORK, 't32-original.onnx'))
-    ap.add_argument('--dpdf', default=os.path.join(WORK, 'dpdfnet2.onnx'))
+    ap.add_argument('--t32', default=MODEL)
+    ap.add_argument('--dpdf', default=DPDF)
     ap.add_argument('--frames', type=int, default=32)
     ap.add_argument('--history-ms', type=int, default=48)
-    ap.add_argument('--overlap-ms', type=int, default=72)
-    ap.add_argument('--dry', type=float, default=0.025)
+    ap.add_argument('--overlap-ms', type=int, default=48)
+    ap.add_argument('--dry', type=float, default=0.0)
     ap.add_argument('--save-dir', default='')
     args = ap.parse_args()
 

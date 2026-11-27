@@ -1,5 +1,7 @@
 # SL-clearVoice
 
+当前模型已更新为原权重 T32 归一化算子优化版。六段完整实录（467.104秒/档）验证：默认保真档音质预测与旧版几乎一致，NPU块均值约116→104ms；平衡档提供较低延迟。估计内容延迟P95分别约415ms和399–400ms，尚未包含声卡/网络。详见[本轮验收](docs/reviews/2026-11-27-t32-operator-validation.md)。
+
 RK3588 会议室语音增强整套链路的研究与交付仓库。
 
 **交付物是完整的处理链路，不是单个模型。** 因此优化必须以整链指标判断，
@@ -11,8 +13,9 @@ RK3588 会议室语音增强整套链路的研究与交付仓库。
 8 麦采集 → 80Hz HPF → 8 麦分段 EQ 校准 → LinearAEC(每麦)
   → 多通道 RLS-WPE → 空间融合 → NeuralRES
   → AGC①(pre-ANS) → 瞬态交叉 → DPDFNet2(降噪, CPU)
-  → AGC② → 平滑门 → NVIDIA T32(去混响, NPU)
-  → AGC③(post-NV) → V4 后处理
+  → AGC② → 平滑门 → NVIDIA T32(增强/去混响, NPU)
+  → AGC③(post-NV) → 当前实时输出
+  → [可选独立实验：实时 v4 / 离线 v4]
 ```
 
 | 模块 | 位置 | 说明 |
@@ -21,9 +24,9 @@ RK3588 会议室语音增强整套链路的研究与交付仓库。
 | AGC | `src/audio3a/src/adaptive_agc.c` | 三级，含向下扩展 |
 | 降噪 | `models/dpdfnet/` | DPDFNet2 |
 | 去混响 | `models/rknn/live/` | NVIDIA T32，NPU |
-| V4 后处理 | `scripts/v4_post.sh` | 频谱塑形 + 电平 |
+| V4 后处理 | `scripts/v4_post.sh` | 离线参考，当前启动脚本未串入 |
 
-板端调度脚本见 `src/audio3a/scripts/`。
+板端调度脚本见 `src/audio3a/scripts/`。构建、回放与计时口径见 [Audio3A](src/audio3a/README.md)。
 
 ## 目录结构
 
@@ -58,8 +61,7 @@ cd data/raw && sha256sum -c SHA256SUMS
 ## 评测
 
 分级诊断、模型横评、AGC 与后处理对比的工具在 `scripts/eval/`，里头的 README
-记了五个反复踩到的坑（偏置对比、DNSMOS 与听感背离、数字静音段、性能测量噪声、
-模型复现必须用现成实现），改链路前值得先读一遍。
+记录了固定输入、时延对齐、数字静音、模型复现和评分口径，改链路前值得先读一遍。
 
 ## 许可
 

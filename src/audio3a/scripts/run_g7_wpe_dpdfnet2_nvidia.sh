@@ -22,7 +22,7 @@ amixer -c 3 cset name='Software Digital Loopback Mode' 14 >/dev/null 2>&1 || tru
 amixer -c 3 cset name='Speaker Playback Switch' 1 >/dev/null 2>&1 || true
 
 # 3. 清理残留进程
-killall -9 p2p_dut_node nvidia_sb_ode_pcm arecord aplay 2>/dev/null || true
+killall -9 p2p_dut_node nvidia_sb_pcm nvidia_sb_ode_pcm arecord aplay 2>/dev/null || true
 sleep 0.2
 
 export LD_LIBRARY_PATH="${PACKAGE_DIR}/lib:${LD_LIBRARY_PATH:-/usr/lib}"
@@ -35,9 +35,30 @@ echo "    消混响配置: 80Hz HPF + 8-Mic WPE + DPDFNet2 + 3-Core NPU NVIDIA T
 echo "    自动录音保存: /tmp/dut_raw10ch.wav (原声) & /tmp/dut_clean.wav (3A后)"
 echo "=================================================================="
 
+# Select latency/quality explicitly; the model filename does not select geometry.
+case "${AUDIO3A_NVIDIA_PROFILE:-quality}" in
+    quality) NVIDIA_HISTORY_MS=48 ;;
+    balanced) NVIDIA_HISTORY_MS=64 ;;
+    *) echo "AUDIO3A_NVIDIA_PROFILE must be quality or balanced" >&2; exit 2 ;;
+esac
+
+NV_BIN="${PACKAGE_DIR}/bin/nvidia_sb_pcm"
+if [ ! -x "$NV_BIN" ]; then NV_BIN="${PACKAGE_DIR}/bin/nvidia_sb_ode_pcm"; fi
+
 CMD_PREFIX=""
 if command -v taskset >/dev/null 2>&1 && [ "$(nproc 2>/dev/null || echo 0)" -ge 8 ]; then
-    CMD_PREFIX="taskset -c 4-7"
+    max=0
+    cores=""
+    for path in /sys/devices/system/cpu/cpu[0-9]*/cpu_capacity; do
+        [ -f "$path" ] || continue
+        value=$(cat "$path")
+        cpu=${path%/cpu_capacity}
+        cpu=${cpu##*/cpu}
+        if [ "$value" -gt "$max" ]; then max=$value; cores=$cpu
+        elif [ "$value" -eq "$max" ]; then cores="$cores,$cpu"; fi
+    done
+    affinity="${AUDIO3A_CPU_AFFINITY:-${cores:-0}}"
+    CMD_PREFIX="taskset -c $affinity"
 fi
 
 # 默认启用 WPE + no-dereverb + dpdfnet + nvidia T32 ODE
@@ -56,7 +77,10 @@ exec ${CMD_PREFIX} "${BIN}" \
     --dpdfnet-model "${PACKAGE_DIR}/models/dpdfnet2.onnx" \
     --nvidia \
     --nvidia-rknn "${PACKAGE_DIR}/models/nvidia-t32-spatial-norm.rknn" \
-    --nvidia-bin "${PACKAGE_DIR}/bin/nvidia_sb_ode_pcm" \
+    --nvidia-bin "$NV_BIN" \
+    --nvidia-frames 32 \
+    --nvidia-history-ms "$NVIDIA_HISTORY_MS" \
+    --nvidia-overlap-ms 48 \
     --nvidia-core-mask 7 \
     --nvidia-dry-gain 0.000 \
     --record-raw /tmp/dut_raw10ch.wav \

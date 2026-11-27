@@ -123,6 +123,8 @@ static double enhance(Pipeline *p,const int16_t *pcm,int count,float *audio) {
     check(rknn_outputs_get(p->ctx,1,&out,NULL),"rknn_outputs_get");
     double npu_ms=now_ms()-start;
     if (out.size!=bytes) fail("Unexpected float estimate size");
+    for (unsigned i=0;i<bytes/sizeof(float);++i)
+        if (!isfinite(((const float *)out.buf)[i])) fail("Non-finite RKNN estimate");
     const float *estimate=out.buf;
     memset(audio,0,p->window*sizeof(*audio));
     for (int k=0;k<p->frames;++k) {

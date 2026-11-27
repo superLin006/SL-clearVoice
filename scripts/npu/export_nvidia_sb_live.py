@@ -36,9 +36,12 @@ class SpatialGroupNorm(nn.Module):
         return F.conv2d(F.adaptive_avg_pool2d(x, 1), self.coefficients)
 
     def forward(self, x):
-        centered = x - self.group_mean(x)
-        variance = self.group_mean(centered.square())
-        return centered * torch.rsqrt(variance + self.eps) * self.weight + self.bias
+        mean = self.group_mean(x)
+        # Compute the affine terms while they are still channel-sized tensors.
+        # Clamp only the small negative variance caused by floating-point rounding.
+        variance = (self.group_mean(x.square()) - mean.square()).clamp_min(0)
+        gain = torch.rsqrt(variance + self.eps) * self.weight
+        return x * gain + (self.bias - mean * gain)
 
 
 class Block(nn.Module):

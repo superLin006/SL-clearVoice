@@ -1,0 +1,1100 @@
+{
+  "date": "2026-11-27",
+  "model_sha256": "09211b69cfa8a193a9046df334c9ab6105562887c270030bef27507a98444684",
+  "summary": {
+    "quality": {
+      "baseline": {
+        "equal_recording_mean": {
+          "sig_mos": 3.1107718914555966,
+          "bak_mos": 4.017562188396751,
+          "ovrl_mos": 2.8379507025288166
+        },
+        "per_recording": [
+          {
+            "sig_mos": 3.136598049399251,
+            "bak_mos": 3.998639576325321,
+            "ovrl_mos": 2.8432165240434166
+          },
+          {
+            "sig_mos": 3.2459721053810973,
+            "bak_mos": 3.994359802657253,
+            "ovrl_mos": 2.9538695608281627
+          },
+          {
+            "sig_mos": 2.693071618853822,
+            "bak_mos": 3.951911557101592,
+            "ovrl_mos": 2.4279467421809993
+          },
+          {
+            "sig_mos": 3.0234269357572336,
+            "bak_mos": 4.0860995005578316,
+            "ovrl_mos": 2.7946387109424786
+          },
+          {
+            "sig_mos": 3.2847554761714064,
+            "bak_mos": 4.0482921781461245,
+            "ovrl_mos": 3.013730403440271
+          },
+          {
+            "sig_mos": 3.280807163170766,
+            "bak_mos": 4.026070515592388,
+            "ovrl_mos": 2.9943022737375697
+          }
+        ]
+      },
+      "new48": {
+        "equal_recording_mean": {
+          "sig_mos": 3.11072607763535,
+          "bak_mos": 4.017310043891626,
+          "ovrl_mos": 2.8377782707290855
+        },
+        "per_recording": [
+          {
+            "sig_mos": 3.135642938134525,
+            "bak_mos": 3.999789515506306,
+            "ovrl_mos": 2.8430989925905448
+          },
+          {
+            "sig_mos": 3.2440558418785352,
+            "bak_mos": 3.990723179870596,
+            "ovrl_mos": 2.950607463490292
+          },
+          {
+            "sig_mos": 2.694641361567014,
+            "bak_mos": 3.9552201611973046,
+            "ovrl_mos": 2.4307368468294364
+          },
+          {
+            "sig_mos": 3.0226524973172513,
+            "bak_mos": 4.0854092083740206,
+            "ovrl_mos": 2.793666997915033
+          },
+          {
+            "sig_mos": 3.286380108967103,
+            "bak_mos": 4.046239603894635,
+            "ovrl_mos": 3.0140382985752607
+          },
+          {
+            "sig_mos": 3.280983717947671,
+            "bak_mos": 4.026478594506895,
+            "ovrl_mos": 2.9945210249739467
+          }
+        ]
+      },
+      "new48_raw": {
+        "equal_recording_mean": {
+          "sig_mos": 3.143999343795471,
+          "bak_mos": 4.0322208998651705,
+          "ovrl_mos": 2.874920371927534
+        },
+        "per_recording": [
+          {
+            "sig_mos": 3.177649700098647,
+            "bak_mos": 4.000535339223,
+            "ovrl_mos": 2.8773045338445877
+          },
+          {
+            "sig_mos": 3.288662109076593,
+            "bak_mos": 3.9967059222979002,
+            "ovrl_mos": 2.9934953193963847
+          },
+          {
+            "sig_mos": 2.7190463103335634,
+            "bak_mos": 3.965727589506821,
+            "ovrl_mos": 2.458947899977969
+          },
+          {
+            "sig_mos": 3.045923203987868,
+            "bak_mos": 4.095251833438084,
+            "ovrl_mos": 2.8226962774320867
+          },
+          {
+            "sig_mos": 3.302119774284703,
+            "bak_mos": 4.053415660243134,
+            "ovrl_mos": 3.0349134665468673
+          },
+          {
+            "sig_mos": 3.330594964991452,
+            "bak_mos": 4.08168905448208,
+            "ovrl_mos": 3.062164734367308
+          }
+        ]
+      },
+      "h64": {
+        "equal_recording_mean": {
+          "sig_mos": 3.092544734567067,
+          "bak_mos": 4.000818991528605,
+          "ovrl_mos": 2.8133580184954403
+        },
+        "per_recording": [
+          {
+            "sig_mos": 3.1095793203431157,
+            "bak_mos": 3.9511679036498415,
+            "ovrl_mos": 2.7937566385930372
+          },
+          {
+            "sig_mos": 3.2066390921721357,
+            "bak_mos": 3.956517906453488,
+            "ovrl_mos": 2.9033343121349846
+          },
+          {
+            "sig_mos": 2.701781490766216,
+            "bak_mos": 3.9399931268733335,
+            "ovrl_mos": 2.427585892159443
+          },
+          {
+            "sig_mos": 2.985396077201297,
+            "bak_mos": 4.055911783864886,
+            "ovrl_mos": 2.7528750722247572
+          },
+          {
+            "sig_mos": 3.29782347263908,
+            "bak_mos": 4.062923806631832,
+            "ovrl_mos": 3.0277865203399075
+          },
+          {
+            "sig_mos": 3.254048954280557,
+            "bak_mos": 4.038399421698244,
+            "ovrl_mos": 2.9748096755205133
+          }
+        ]
+      },
+      "h64_raw": {
+        "equal_recording_mean": {
+          "sig_mos": 3.1337997032171043,
+          "bak_mos": 4.020294915752028,
+          "ovrl_mos": 2.8589653638972727
+        },
+        "per_recording": [
+          {
+            "sig_mos": 3.14838895961299,
+            "bak_mos": 3.966448243841329,
+            "ovrl_mos": 2.8332015733432945
+          },
+          {
+            "sig_mos": 3.2499704332664443,
+            "bak_mos": 3.9776232731682275,
+            "ovrl_mos": 2.9504189154783558
+          },
+          {
+            "sig_mos": 2.7464836408601068,
+            "bak_mos": 3.9600839493190696,
+            "ovrl_mos": 2.4735420765384863
+          },
+          {
+            "sig_mos": 3.031766008658493,
+            "bak_mos": 4.072258085712086,
+            "ovrl_mos": 2.8044856122482074
+          },
+          {
+            "sig_mos": 3.3344436018818246,
+            "bak_mos": 4.0747910278311785,
+            "ovrl_mos": 3.068571017154644
+          },
+          {
+            "sig_mos": 3.2917455750227673,
+            "bak_mos": 4.070564914640279,
+            "ovrl_mos": 3.0235729886206495
+          }
+        ]
+      }
+    },
+    "timing": {
+      "baseline": {
+        "recordings": [
+          {
+            "case": 1,
+            "frames": 32,
+            "core_mask": 7,
+            "dry_gain": 0.0,
+            "gaussian_sampling": false,
+            "blocks": 544,
+            "samples": 1323264,
+            "mean_ms": 116.218,
+            "npu_mean_ms": 115.385,
+            "max_ms": 124.122,
+            "budget_ms": 152.0,
+            "rtf": 0.7646,
+            "over_budget": 0,
+            "max_queue_ms": 0.0,
+            "input_clock_ms": 885311737.763,
+            "first_ready_ms": 318.079,
+            "p95_service_ms": 117.694,
+            "p95_origin_ms": 885313833.169,
+            "output_samples": 1323264,
+            "availability_p95_ms": 334.632,
+            "availability_max_ms": 344.954,
+            "estimated_content_p95_ms": 426.632,
+            "estimated_content_max_ms": 436.954
+          },
+          {
+            "case": 2,
+            "frames": 32,
+            "core_mask": 7,
+            "dry_gain": 0.0,
+            "gaussian_sampling": false,
+            "blocks": 448,
+            "samples": 1089024,
+            "mean_ms": 117.025,
+            "npu_mean_ms": 116.177,
+            "max_ms": 125.726,
+            "budget_ms": 152.0,
+            "rtf": 0.7699,
+            "over_budget": 0,
+            "max_queue_ms": 0.0,
+            "input_clock_ms": 885397034.867,
+            "first_ready_ms": 318.116,
+            "p95_service_ms": 118.225,
+            "p95_origin_ms": 885399136.006,
+            "output_samples": 1089024,
+            "availability_p95_ms": 335.711,
+            "availability_max_ms": 350.088,
+            "estimated_content_p95_ms": 427.711,
+            "estimated_content_max_ms": 442.088
+          },
+          {
+            "case": 3,
+            "frames": 32,
+            "core_mask": 7,
+            "dry_gain": 0.0,
+            "gaussian_sampling": false,
+            "blocks": 427,
+            "samples": 1038336,
+            "mean_ms": 116.695,
+            "npu_mean_ms": 115.848,
+            "max_ms": 124.174,
+            "budget_ms": 152.0,
+            "rtf": 0.7677,
+            "over_budget": 0,
+            "max_queue_ms": 0.0,
+            "input_clock_ms": 885656916.206,
+            "first_ready_ms": 316.829,
+            "p95_service_ms": 118.036,
+            "p95_origin_ms": 885659029.023,
+            "output_samples": 1038336,
+            "availability_p95_ms": 335.09,
+            "availability_max_ms": 344.893,
+            "estimated_content_p95_ms": 427.09,
+            "estimated_content_max_ms": 436.893
+          },
+          {
+            "case": 4,
+            "frames": 32,
+            "core_mask": 7,
+            "dry_gain": 0.0,
+            "gaussian_sampling": false,
+            "blocks": 653,
+            "samples": 1588224,
+            "mean_ms": 117.076,
+            "npu_mean_ms": 116.213,
+            "max_ms": 124.798,
+            "budget_ms": 152.0,
+            "rtf": 0.7702,
+            "over_budget": 0,
+            "max_queue_ms": 0.0,
+            "input_clock_ms": 885724414.183,
+            "first_ready_ms": 322.955,
+            "p95_service_ms": 118.3,
+            "p95_origin_ms": 885726515.156,
+            "output_samples": 1588224,
+            "availability_p95_ms": 335.47,
+            "availability_max_ms": 344.181,
+            "estimated_content_p95_ms": 427.47,
+            "estimated_content_max_ms": 436.181
+          },
+          {
+            "case": 5,
+            "frames": 32,
+            "core_mask": 7,
+            "dry_gain": 0.0,
+            "gaussian_sampling": false,
+            "blocks": 474,
+            "samples": 1151744,
+            "mean_ms": 117.289,
+            "npu_mean_ms": 116.458,
+            "max_ms": 122.938,
+            "budget_ms": 152.0,
+            "rtf": 0.7716,
+            "over_budget": 0,
+            "max_queue_ms": 0.0,
+            "input_clock_ms": 885826277.231,
+            "first_ready_ms": 318.625,
+            "p95_service_ms": 118.777,
+            "p95_origin_ms": 885828378.488,
+            "output_samples": 1151744,
+            "availability_p95_ms": 335.475,
+            "availability_max_ms": 343.854,
+            "estimated_content_p95_ms": 427.475,
+            "estimated_content_max_ms": 435.854
+          },
+          {
+            "case": 6,
+            "frames": 32,
+            "core_mask": 7,
+            "dry_gain": 0.0,
+            "gaussian_sampling": false,
+            "blocks": 528,
+            "samples": 1283072,
+            "mean_ms": 117.199,
+            "npu_mean_ms": 116.376,
+            "max_ms": 131.599,
+            "budget_ms": 152.0,
+            "rtf": 0.771,
+            "over_budget": 0,
+            "max_queue_ms": 0.0,
+            "input_clock_ms": 885900937.198,
+            "first_ready_ms": 323.713,
+            "p95_service_ms": 118.825,
+            "p95_origin_ms": 885903038.086,
+            "output_samples": 1283072,
+            "availability_p95_ms": 335.568,
+            "availability_max_ms": 350.31,
+            "estimated_content_p95_ms": 427.568,
+            "estimated_content_max_ms": 442.31
+          }
+        ],
+        "blocks": 3074,
+        "late_blocks": 0,
+        "mean_npu_ms_weighted": 116.07629830839296,
+        "pcm_p95_per_recording_range_ms": [
+          334.632,
+          335.711
+        ],
+        "content_p95_per_recording_range_ms": [
+          426.632,
+          427.711
+        ],
+        "max_estimated_content_age_ms": 442.31
+      },
+      "quality": {
+        "recordings": [
+          {
+            "case": 1,
+            "frames": 32,
+            "core_mask": 7,
+            "dry_gain": 0.0,
+            "gaussian_sampling": false,
+            "blocks": 544,
+            "samples": 1323264,
+            "mean_ms": 105.182,
+            "npu_mean_ms": 104.353,
+            "max_ms": 112.595,
+            "budget_ms": 152.0,
+            "rtf": 0.692,
+            "over_budget": 0,
+            "max_queue_ms": 0.0,
+            "input_clock_ms": 892487792.399,
+            "first_ready_ms": 307.62,
+            "p95_service_ms": 106.741,
+            "p95_origin_ms": 892488675.561,
+            "output_samples": 1323264,
+            "availability_p95_ms": 323.567,
+            "availability_max_ms": 341.823,
+            "order": "dpdf-nvidia",
+            "estimated_content_p95_ms": 415.567,
+            "estimated_content_max_ms": 433.823
+          },
+          {
+            "case": 2,
+            "frames": 32,
+            "core_mask": 7,
+            "dry_gain": 0.0,
+            "gaussian_sampling": false,
+            "blocks": 448,
+            "samples": 1089024,
+            "mean_ms": 105.213,
+            "npu_mean_ms": 104.384,
+            "max_ms": 109.559,
+            "budget_ms": 152.0,
+            "rtf": 0.6922,
+            "over_budget": 0,
+            "max_queue_ms": 0.0,
+            "input_clock_ms": 893208963.128,
+            "first_ready_ms": 305.809,
+            "p95_service_ms": 106.867,
+            "p95_origin_ms": 893209854.572,
+            "output_samples": 1089024,
+            "availability_p95_ms": 323.485,
+            "availability_max_ms": 334.169,
+            "order": "dpdf-nvidia",
+            "estimated_content_p95_ms": 415.485,
+            "estimated_content_max_ms": 426.169
+          },
+          {
+            "case": 3,
+            "frames": 32,
+            "core_mask": 7,
+            "dry_gain": 0.0,
+            "gaussian_sampling": false,
+            "blocks": 427,
+            "samples": 1038336,
+            "mean_ms": 104.784,
+            "npu_mean_ms": 103.939,
+            "max_ms": 113.682,
+            "budget_ms": 152.0,
+            "rtf": 0.6894,
+            "over_budget": 0,
+            "max_queue_ms": 0.0,
+            "input_clock_ms": 892722243.471,
+            "first_ready_ms": 306.512,
+            "p95_service_ms": 106.524,
+            "p95_origin_ms": 892723127.645,
+            "output_samples": 1038336,
+            "availability_p95_ms": 322.775,
+            "availability_max_ms": 331.349,
+            "order": "dpdf-nvidia",
+            "estimated_content_p95_ms": 414.775,
+            "estimated_content_max_ms": 423.349
+          },
+          {
+            "case": 4,
+            "frames": 32,
+            "core_mask": 7,
+            "dry_gain": 0.0,
+            "gaussian_sampling": false,
+            "blocks": 653,
+            "samples": 1588224,
+            "mean_ms": 104.682,
+            "npu_mean_ms": 103.824,
+            "max_ms": 113.166,
+            "budget_ms": 152.0,
+            "rtf": 0.6887,
+            "over_budget": 0,
+            "max_queue_ms": 0.0,
+            "input_clock_ms": 893448566.984,
+            "first_ready_ms": 310.104,
+            "p95_service_ms": 106.178,
+            "p95_origin_ms": 893449451.454,
+            "output_samples": 1588224,
+            "availability_p95_ms": 322.788,
+            "availability_max_ms": 330.995,
+            "order": "dpdf-nvidia",
+            "estimated_content_p95_ms": 414.788,
+            "estimated_content_max_ms": 422.995
+          },
+          {
+            "case": 5,
+            "frames": 32,
+            "core_mask": 7,
+            "dry_gain": 0.0,
+            "gaussian_sampling": false,
+            "blocks": 474,
+            "samples": 1151744,
+            "mean_ms": 104.683,
+            "npu_mean_ms": 103.848,
+            "max_ms": 110.395,
+            "budget_ms": 152.0,
+            "rtf": 0.6887,
+            "over_budget": 0,
+            "max_queue_ms": 0.0,
+            "input_clock_ms": 893549202.747,
+            "first_ready_ms": 305.343,
+            "p95_service_ms": 106.64,
+            "p95_origin_ms": 893550076.555,
+            "output_samples": 1151744,
+            "availability_p95_ms": 322.849,
+            "availability_max_ms": 331.924,
+            "order": "dpdf-nvidia",
+            "estimated_content_p95_ms": 414.849,
+            "estimated_content_max_ms": 423.924
+          },
+          {
+            "case": 6,
+            "frames": 32,
+            "core_mask": 7,
+            "dry_gain": 0.0,
+            "gaussian_sampling": false,
+            "blocks": 528,
+            "samples": 1283072,
+            "mean_ms": 105.243,
+            "npu_mean_ms": 104.392,
+            "max_ms": 117.921,
+            "budget_ms": 152.0,
+            "rtf": 0.6924,
+            "over_budget": 0,
+            "max_queue_ms": 0.0,
+            "input_clock_ms": 893777546.0,
+            "first_ready_ms": 306.387,
+            "p95_service_ms": 106.852,
+            "p95_origin_ms": 893778430.262,
+            "output_samples": 1283072,
+            "availability_p95_ms": 323.599,
+            "availability_max_ms": 335.898,
+            "order": "dpdf-nvidia",
+            "estimated_content_p95_ms": 415.599,
+            "estimated_content_max_ms": 427.898
+          }
+        ],
+        "blocks": 3074,
+        "late_blocks": 0,
+        "mean_npu_ms_weighted": 104.11646616785947,
+        "pcm_p95_per_recording_range_ms": [
+          322.775,
+          323.599
+        ],
+        "content_p95_per_recording_range_ms": [
+          414.775,
+          415.599
+        ],
+        "max_estimated_content_age_ms": 433.823
+      },
+      "balanced": {
+        "recordings": [
+          {
+            "case": 1,
+            "frames": 32,
+            "core_mask": 7,
+            "dry_gain": 0.0,
+            "gaussian_sampling": false,
+            "blocks": 608,
+            "samples": 1323264,
+            "mean_ms": 104.711,
+            "npu_mean_ms": 103.888,
+            "max_ms": 115.72,
+            "budget_ms": 136.0,
+            "rtf": 0.7699,
+            "over_budget": 0,
+            "max_queue_ms": 0.0,
+            "input_clock_ms": 891733221.225,
+            "first_ready_ms": 287.168,
+            "p95_service_ms": 106.607,
+            "p95_origin_ms": 891734081.703,
+            "output_samples": 1323264,
+            "availability_p95_ms": 307.316,
+            "availability_max_ms": 315.145,
+            "order": "dpdf-nvidia",
+            "estimated_content_p95_ms": 399.316,
+            "estimated_content_max_ms": 407.145
+          },
+          {
+            "case": 2,
+            "frames": 32,
+            "core_mask": 7,
+            "dry_gain": 0.0,
+            "gaussian_sampling": false,
+            "blocks": 501,
+            "samples": 1089024,
+            "mean_ms": 105.173,
+            "npu_mean_ms": 104.343,
+            "max_ms": 119.286,
+            "budget_ms": 136.0,
+            "rtf": 0.7733,
+            "over_budget": 0,
+            "max_queue_ms": 0.0,
+            "input_clock_ms": 893278420.019,
+            "first_ready_ms": 288.504,
+            "p95_service_ms": 106.81,
+            "p95_origin_ms": 893279285.579,
+            "output_samples": 1089024,
+            "availability_p95_ms": 307.933,
+            "availability_max_ms": 318.897,
+            "order": "dpdf-nvidia",
+            "estimated_content_p95_ms": 399.933,
+            "estimated_content_max_ms": 410.897
+          },
+          {
+            "case": 3,
+            "frames": 32,
+            "core_mask": 7,
+            "dry_gain": 0.0,
+            "gaussian_sampling": false,
+            "blocks": 477,
+            "samples": 1038336,
+            "mean_ms": 104.651,
+            "npu_mean_ms": 103.826,
+            "max_ms": 117.831,
+            "budget_ms": 136.0,
+            "rtf": 0.7695,
+            "over_budget": 0,
+            "max_queue_ms": 0.0,
+            "input_clock_ms": 891967588.885,
+            "first_ready_ms": 288.747,
+            "p95_service_ms": 106.186,
+            "p95_origin_ms": 891968463.303,
+            "output_samples": 1038336,
+            "availability_p95_ms": 307.039,
+            "availability_max_ms": 318.76,
+            "order": "dpdf-nvidia",
+            "estimated_content_p95_ms": 399.039,
+            "estimated_content_max_ms": 410.76
+          },
+          {
+            "case": 4,
+            "frames": 32,
+            "core_mask": 7,
+            "dry_gain": 0.0,
+            "gaussian_sampling": false,
+            "blocks": 730,
+            "samples": 1588224,
+            "mean_ms": 105.021,
+            "npu_mean_ms": 104.159,
+            "max_ms": 112.775,
+            "budget_ms": 136.0,
+            "rtf": 0.7722,
+            "over_budget": 0,
+            "max_queue_ms": 0.0,
+            "input_clock_ms": 893347920.997,
+            "first_ready_ms": 290.196,
+            "p95_service_ms": 106.531,
+            "p95_origin_ms": 893348785.494,
+            "output_samples": 1588224,
+            "availability_p95_ms": 307.414,
+            "availability_max_ms": 316.684,
+            "order": "dpdf-nvidia",
+            "estimated_content_p95_ms": 399.414,
+            "estimated_content_max_ms": 408.684
+          },
+          {
+            "case": 5,
+            "frames": 32,
+            "core_mask": 7,
+            "dry_gain": 0.0,
+            "gaussian_sampling": false,
+            "blocks": 529,
+            "samples": 1151744,
+            "mean_ms": 104.835,
+            "npu_mean_ms": 103.998,
+            "max_ms": 111.836,
+            "budget_ms": 136.0,
+            "rtf": 0.7708,
+            "over_budget": 0,
+            "max_queue_ms": 0.0,
+            "input_clock_ms": 893622591.218,
+            "first_ready_ms": 289.078,
+            "p95_service_ms": 106.533,
+            "p95_origin_ms": 893623455.761,
+            "output_samples": 1151744,
+            "availability_p95_ms": 307.261,
+            "availability_max_ms": 317.592,
+            "order": "dpdf-nvidia",
+            "estimated_content_p95_ms": 399.261,
+            "estimated_content_max_ms": 409.592
+          },
+          {
+            "case": 6,
+            "frames": 32,
+            "core_mask": 7,
+            "dry_gain": 0.0,
+            "gaussian_sampling": false,
+            "blocks": 590,
+            "samples": 1283072,
+            "mean_ms": 105.152,
+            "npu_mean_ms": 104.306,
+            "max_ms": 119.606,
+            "budget_ms": 136.0,
+            "rtf": 0.7732,
+            "over_budget": 0,
+            "max_queue_ms": 0.0,
+            "input_clock_ms": 893695919.284,
+            "first_ready_ms": 289.129,
+            "p95_service_ms": 106.806,
+            "p95_origin_ms": 893696786.384,
+            "output_samples": 1283072,
+            "availability_p95_ms": 307.788,
+            "availability_max_ms": 318.87,
+            "order": "dpdf-nvidia",
+            "estimated_content_p95_ms": 399.788,
+            "estimated_content_max_ms": 410.87
+          }
+        ],
+        "blocks": 3435,
+        "late_blocks": 0,
+        "mean_npu_ms_weighted": 104.09208180494905,
+        "pcm_p95_per_recording_range_ms": [
+          307.039,
+          307.933
+        ],
+        "content_p95_per_recording_range_ms": [
+          399.039,
+          399.933
+        ],
+        "max_estimated_content_age_ms": 410.897
+      }
+    },
+    "input_comparison": {
+      "1": {
+        "quality_balanced_exactly_equal": true,
+        "sha256": "e8be56e3794d232ea7a2319de383d472772ead11eb60f569f0474d9973557412"
+      },
+      "2": {
+        "quality_balanced_exactly_equal": true,
+        "sha256": "dc98e3390cdc9faca2c47605632f18a22ea81fe39f9057400b5944fbb8a8b6e8"
+      },
+      "3": {
+        "quality_balanced_exactly_equal": true,
+        "sha256": "b61a3609d64c6a0fdd5f445b10d8009dbaf071eee341dc4d44694ffad228d3f7"
+      },
+      "4": {
+        "quality_balanced_exactly_equal": true,
+        "sha256": "1af599512ce82312916bccb816f9fb1259bacfd6510a72d754af96cfbd245898"
+      },
+      "5": {
+        "quality_balanced_exactly_equal": true,
+        "sha256": "ba2eccc50497da67125d8a90e82d2f18527744b4f8d9463433cc67c757e09f7b"
+      },
+      "6": {
+        "quality_balanced_exactly_equal": true,
+        "sha256": "9e9b524b7c1c23652eb3c5f5895216402be4cc2b490f607f4676c4b57c921272"
+      }
+    },
+    "total_seconds": 467.104,
+    "limits": "File-input paced tests, not physical microphone/network. Content estimate adds measured ~92ms waveform displacement. DNSMOS is no-reference model prediction, not clean-ground-truth fidelity."
+  },
+  "native_same_input": {
+    "1": {
+      "samples": 1323264,
+      "source_sha256": "e8be56e3794d232ea7a2319de383d472772ead11eb60f569f0474d9973557412",
+      "tracks": {
+        "quality": {
+          "dnsmos": {
+            "sig_mos": 3.177649700098647,
+            "bak_mos": 4.000535339223,
+            "ovrl_mos": 2.8773045338445877
+          },
+          "correlation_to_native50": 0.723829975316052
+        },
+        "balanced": {
+          "dnsmos": {
+            "sig_mos": 3.14838895961299,
+            "bak_mos": 3.966448243841329,
+            "ovrl_mos": 2.8332015733432945
+          },
+          "correlation_to_native50": 0.7185360905423359
+        },
+        "native1": {
+          "dnsmos": {
+            "sig_mos": 3.239938107182747,
+            "bak_mos": 4.003259890907862,
+            "ovrl_mos": 2.933647289661525
+          },
+          "correlation_to_native50": 0.8767253763372543
+        },
+        "native50": {
+          "dnsmos": {
+            "sig_mos": 3.2920321878090464,
+            "bak_mos": 3.9993179816724624,
+            "ovrl_mos": 2.970898263552097
+          },
+          "correlation_to_native50": 0.9999999999999999
+        }
+      },
+      "limits": "Same exact model input. Native references use full 8s output blocks with 2s extra left/right context. Original50 is a model reference, not clean ground truth; no real-time claim."
+    },
+    "3": {
+      "samples": 1038336,
+      "source_sha256": "b61a3609d64c6a0fdd5f445b10d8009dbaf071eee341dc4d44694ffad228d3f7",
+      "tracks": {
+        "quality": {
+          "dnsmos": {
+            "sig_mos": 2.7190463103335634,
+            "bak_mos": 3.965727589506821,
+            "ovrl_mos": 2.458947899977969
+          },
+          "correlation_to_native50": 0.3920504969037679
+        },
+        "balanced": {
+          "dnsmos": {
+            "sig_mos": 2.7464836408601068,
+            "bak_mos": 3.9600839493190696,
+            "ovrl_mos": 2.4735420765384863
+          },
+          "correlation_to_native50": 0.36272964256272355
+        },
+        "native1": {
+          "dnsmos": {
+            "sig_mos": 2.874679367049542,
+            "bak_mos": 3.9497859050471504,
+            "ovrl_mos": 2.580266823335182
+          },
+          "correlation_to_native50": 0.6191363905631494
+        },
+        "native50": {
+          "dnsmos": {
+            "sig_mos": 3.001535719754116,
+            "bak_mos": 3.9200249099876845,
+            "ovrl_mos": 2.6701420408942873
+          },
+          "correlation_to_native50": 0.9999999999999998
+        }
+      },
+      "limits": "Same exact model input. Native references use full 8s output blocks with 2s extra left/right context. Original50 is a model reference, not clean ground truth; no real-time claim."
+    }
+  },
+  "tensor_checks": {
+    "baseline": {
+      "blocks_including_warmup": 54,
+      "all_finite": true,
+      "relative_rms": 0.0047087342141422794,
+      "p95_block_relative_rms": 0.009924149098896275,
+      "max_block_relative_rms": 0.012596502038198721,
+      "max_abs_difference": 0.03008556365966797,
+      "correlation": 0.9999904269932246,
+      "per_block_relative_rms": [
+        0.007868066603849621,
+        0.007868066603849621,
+        0.007868066603849621,
+        0.005440123969127713,
+        0.003649258011604013,
+        0.006755099065029213,
+        0.007322774540584336,
+        0.004519004978310422,
+        0.005094936018900878,
+        0.003983720375494049,
+        0.012596502038198721,
+        0.011973821423651464,
+        0.00938327353244228,
+        0.004753945233134711,
+        0.0033356192687253147,
+        0.0032206491644293377,
+        0.003795845160161763,
+        0.0031582017732447957,
+        0.009582689901181623,
+        0.006114250691326799,
+        0.0035875770768906716,
+        0.005722993781827724,
+        0.0040705283668408,
+        0.005326411313375692,
+        0.009681236658612405,
+        0.004834825918471302,
+        0.005037785346629513,
+        0.0071043275626024366,
+        0.00957857656963131,
+        0.010375272202280614,
+        0.0031958368795027897,
+        0.007868066603849621,
+        0.007868066603849621,
+        0.003558427356446736,
+        0.0028423955514892706,
+        0.0026234820559009006,
+        0.0030455785911085633,
+        0.0031667548898254537,
+        0.003458842402845428,
+        0.0033550048998816835,
+        0.0028234665551909025,
+        0.004016954382478413,
+        0.005030822913372655,
+        0.004451616426021745,
+        0.006578689746473337,
+        0.005836376663308291,
+        0.0029199814817374493,
+        0.0036240875319409165,
+        0.006290697797046213,
+        0.0054595020114112805,
+        0.005299915604515735,
+        0.006323419909087298,
+        0.0062322745609176555,
+        0.002407365737163779
+      ],
+      "scope": "Same captured FP32 input to actual FP16 RKNN and original native FP32 T32 estimator; original checkpoint, no Gaussian or teacher/student training."
+    },
+    "affine": {
+      "blocks_including_warmup": 54,
+      "all_finite": true,
+      "relative_rms": 0.004649629608746031,
+      "p95_block_relative_rms": 0.010540762504311076,
+      "max_block_relative_rms": 0.011320985438753725,
+      "max_abs_difference": 0.030890822410583496,
+      "correlation": 0.9999907352504976,
+      "per_block_relative_rms": [
+        0.009011446103694507,
+        0.009011446103694507,
+        0.009011446103694507,
+        0.005466455212098476,
+        0.003411810711638276,
+        0.007421081739796126,
+        0.00649338805502374,
+        0.004387512432595842,
+        0.004948030122010292,
+        0.004463249996644011,
+        0.01101457838438901,
+        0.011320985438753725,
+        0.009409563436825823,
+        0.004990966607865536,
+        0.003333918891810857,
+        0.0031930074049923026,
+        0.0038436397154429204,
+        0.0031925144903610834,
+        0.00953888582574194,
+        0.005512567899499564,
+        0.0037619892951682005,
+        0.005283739987712761,
+        0.004912644265991546,
+        0.005935967569545524,
+        0.010518835792859511,
+        0.005218326783048505,
+        0.005000586970286295,
+        0.007608204193289705,
+        0.0076901142067544994,
+        0.010581483539863983,
+        0.003225484099450849,
+        0.009011446103694507,
+        0.009011446103694507,
+        0.003514060227763431,
+        0.0032184265749231646,
+        0.0025664600688691604,
+        0.003023713584228414,
+        0.0032938384316834636,
+        0.0033131261218798704,
+        0.003311163571929344,
+        0.002844439644675311,
+        0.004370663378847172,
+        0.004903032265550985,
+        0.004227412033645474,
+        0.005521295154153855,
+        0.005487266818765884,
+        0.002914334361661764,
+        0.003655356021391164,
+        0.006153996641147558,
+        0.005678356266414227,
+        0.005943219586108362,
+        0.0056778687089578325,
+        0.006332000136248356,
+        0.0023825716180456633
+      ],
+      "scope": "Same captured FP32 input to actual FP16 RKNN and original native FP32 T32 estimator; original checkpoint, no Gaussian or teacher/student training."
+    },
+    "moments": {
+      "blocks_including_warmup": 54,
+      "all_finite": true,
+      "relative_rms": 0.004749822785181739,
+      "p95_block_relative_rms": 0.010052836432213389,
+      "max_block_relative_rms": 0.012695048773357564,
+      "max_abs_difference": 0.030646681785583496,
+      "correlation": 0.999990382450829,
+      "per_block_relative_rms": [
+        0.009205278086045897,
+        0.009205278086045897,
+        0.009205278086045897,
+        0.005332150942029943,
+        0.0036485454770605165,
+        0.006410101488974608,
+        0.007113126327895249,
+        0.004553068734769158,
+        0.005009208775546848,
+        0.004433986907162415,
+        0.012695048773357564,
+        0.009891556871077359,
+        0.008851506729994123,
+        0.005250989766363971,
+        0.003543630758617239,
+        0.0036567562746121943,
+        0.0038016917896897258,
+        0.0032653848964199505,
+        0.01102142118931038,
+        0.007883298297683177,
+        0.003860413660763674,
+        0.006393289122860074,
+        0.00481337526469954,
+        0.0052152683251025615,
+        0.008651835489866233,
+        0.004715710745367549,
+        0.004443370813005806,
+        0.007784487006003209,
+        0.007902764424255861,
+        0.01035235561718031,
+        0.003165458236184068,
+        0.009205278086045897,
+        0.009205278086045897,
+        0.003598593214053711,
+        0.0028612153939991157,
+        0.0026373884462551223,
+        0.003065956213911542,
+        0.003268159383219157,
+        0.003652411823145156,
+        0.0035179838085324378,
+        0.002804461038494622,
+        0.0049259679149369455,
+        0.004602707798078547,
+        0.005241493570283038,
+        0.005313812843206452,
+        0.005777842508475534,
+        0.0031442015505515025,
+        0.0037373621440418138,
+        0.006724081481244455,
+        0.0058651925019997525,
+        0.005898896326492034,
+        0.006083292798686159,
+        0.006369080240007304,
+        0.002750041190946135
+      ],
+      "scope": "Same captured FP32 input to actual FP16 RKNN and original native FP32 T32 estimator; original checkpoint, no Gaussian or teacher/student training."
+    }
+  },
+  "production_qualification": {
+    "parity_sha256": "2a59f6b947e0b65e132b9ec06f918a7676564e94af5d1518c41a38f8bdeb70dc",
+    "frame_mismatch_rejected": true,
+    "release": "/userdata/temp/sl-clearvoice-t32-release-20261127",
+    "profiles": [
+      "quality",
+      "balanced"
+    ],
+    "trials_each": 2,
+    "AGC3": "bypass",
+    "model_sha256": "09211b69cfa8a193a9046df334c9ab6105562887c270030bef27507a98444684",
+    "parent_frame_mismatch_status": 1,
+    "correct_model_name_output_parity_sha256": "08b70277fe5e89c3398b6f218921a168856db0c6b42214b2163943fb4f5b0e7d",
+    "final_source_build_byte_identical": true
+  },
+  "input_manifest": {
+    "meeting_1.raw10ch": {
+      "source": "/home/xh/itc_project/superlin/SL-clearVoice/data/raw/meeting_1.raw10ch.wav",
+      "source_sha256": "d9537d026c5d8ccf4f6fabeb673493b0b61e9f73423b2d3509c48cbcd315066b",
+      "derived_sha256": "d9537d026c5d8ccf4f6fabeb673493b0b61e9f73423b2d3509c48cbcd315066b",
+      "gain_db_mic_channels": 0,
+      "samples": 1323264,
+      "sample_rate": 16000,
+      "channels": 10
+    },
+    "meeting_2.raw10ch": {
+      "source": "/home/xh/itc_project/superlin/SL-clearVoice/data/raw/meeting_2.raw10ch.wav",
+      "source_sha256": "86fbeb3510b34556962f3f0b72b1a0d8ab0b79c04eac40c36c857f00d9450deb",
+      "derived_sha256": "86fbeb3510b34556962f3f0b72b1a0d8ab0b79c04eac40c36c857f00d9450deb",
+      "gain_db_mic_channels": 0,
+      "samples": 1089024,
+      "sample_rate": 16000,
+      "channels": 10
+    },
+    "meeting_3.raw10ch": {
+      "source": "/home/xh/itc_project/superlin/SL-clearVoice/data/raw/meeting_3.raw10ch.wav",
+      "source_sha256": "d9acfccfca41c0f304fb9cc174c15fd2d176811fe2725e822af9758c39bbfce6",
+      "derived_sha256": "2e89fec42518877456539e16f7d94b0ab0cb3caf4daccd6b88aed1b5a434bf17",
+      "gain_db_mic_channels": 32.863352156846375,
+      "samples": 1038336,
+      "sample_rate": 16000,
+      "channels": 10
+    },
+    "meeting_4.raw10ch": {
+      "source": "/home/xh/itc_project/superlin/SL-clearVoice/data/raw/meeting_4.raw10ch.wav",
+      "source_sha256": "3d994027bf8a7ff43cd5a0ef00e5677ef7729e21dc89ec19f35ebbb497e42d59",
+      "derived_sha256": "dbfa06bf66adcd1479159b73c46d4f6f6adffa6a15a52ee891a859527f2bb2e9",
+      "gain_db_mic_channels": 36.78525079124367,
+      "samples": 1588224,
+      "sample_rate": 16000,
+      "channels": 10
+    },
+    "meeting_5.raw10ch": {
+      "source": "/home/xh/itc_project/superlin/SL-clearVoice/data/raw/meeting_5.raw10ch.wav",
+      "source_sha256": "27d2055d3349576f7172a3bf688e32cb8bc6eb5708dfe59dbb30776c0320530c",
+      "derived_sha256": "27d2055d3349576f7172a3bf688e32cb8bc6eb5708dfe59dbb30776c0320530c",
+      "gain_db_mic_channels": 0,
+      "samples": 1151744,
+      "sample_rate": 16000,
+      "channels": 10
+    },
+    "meeting_6.raw10ch": {
+      "source": "/home/xh/itc_project/superlin/SL-clearVoice/data/raw/meeting_6.raw10ch.wav",
+      "source_sha256": "a534c114b7da83626e117ae769d54d4abedd73a8b68788711b81a9149dafc539",
+      "derived_sha256": "a534c114b7da83626e117ae769d54d4abedd73a8b68788711b81a9149dafc539",
+      "gain_db_mic_channels": 0,
+      "samples": 1283072,
+      "sample_rate": 16000,
+      "channels": 10
+    }
+  },
+  "libraries": {
+    "onnxruntime": "1.24.4",
+    "onnxruntime_sha256": "7b31d696ba5020ae72c967e499e802af8123778f1540237bff155db15fe0d7d7",
+    "rknnrt": "2.5.0",
+    "rknnrt_sha256": "4b6cc575bedf8952b13db4b1190fa3b3d2ac213f00be774ff6ccd19d651970c0"
+  }
+}

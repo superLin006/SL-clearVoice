@@ -1,0 +1,115 @@
+{
+  "name": "NVIDIA SB T32 original-weight one-step estimator",
+  "file": "nvidia-t32-spatial-norm.rknn",
+  "sha256": "09211b69cfa8a193a9046df334c9ab6105562887c270030bef27507a98444684",
+  "previous_sha256": "cfd9b689b665754a06057836eab11f0659226b60da7331aa245b2f06965131b6",
+  "frames": 32,
+  "logical_onnx_input_shape": [
+    1,
+    2,
+    256,
+    32
+  ],
+  "precision": "RKNN FP16",
+  "original_checkpoint_sha256": "2490b0a61abc0f24298708cebd941fb1bb71b5bb240d0bda073c244dc965512f",
+  "toolkit": "RKNN Toolkit2 2.3.2",
+  "validated_runtime": "2.5.0",
+  "validated_driver": "0.9.8",
+  "graph_change": "GroupNorm uses mean-square minus squared-mean variance, clamp at zero, and factors channel-wise affine terms before broadcast. No trained weights changed.",
+  "fp32_relative_error_max": 3.091770622631884e-06,
+  "same_input_fp16_validation": {
+    "baseline": {
+      "blocks_including_warmup": 54,
+      "all_finite": true,
+      "relative_rms": 0.0047087342141422794,
+      "p95_block_relative_rms": 0.009924149098896275,
+      "max_block_relative_rms": 0.012596502038198721,
+      "max_abs_difference": 0.03008556365966797,
+      "correlation": 0.9999904269932246,
+      "scope": "Same captured FP32 input to actual FP16 RKNN and original native FP32 T32 estimator; original checkpoint, no Gaussian or teacher/student training."
+    },
+    "moments": {
+      "blocks_including_warmup": 54,
+      "all_finite": true,
+      "relative_rms": 0.004749822785181739,
+      "p95_block_relative_rms": 0.010052836432213389,
+      "max_block_relative_rms": 0.012695048773357564,
+      "max_abs_difference": 0.030646681785583496,
+      "correlation": 0.999990382450829,
+      "scope": "Same captured FP32 input to actual FP16 RKNN and original native FP32 T32 estimator; original checkpoint, no Gaussian or teacher/student training."
+    }
+  },
+  "same_geometry_pcm_comparison": {
+    "samples": 128000,
+    "correlation": 0.9999969923748839,
+    "relative_rms": 0.0024593818837977473,
+    "max_pcm_difference": 61.0
+  },
+  "geometry": "Frames are verified by the runtime. History/overlap are host pipeline options, not encoded in the filename.",
+  "rebuild": "scripts/npu/export_nvidia_sb_live.py --frames 32 followed by scripts/npu/build_nvidia_sb_live_rknn.py",
+  "onnx_sha256": "fe0456c957bc3cc370e3d5d5bd8e4926553cb583b84668b8e74a73e24906e4e1",
+  "validation_date": "2026-11-27",
+  "whole_chain_validation": {
+    "recordings": 6,
+    "seconds_each_profile": 467.104,
+    "input_channels": 10,
+    "dpdf_model_sha256": "ce35d6025fc71df0ef10d1540e1b7916837bbfe5f6896deb744508d2cad487a9",
+    "quality": {
+      "blocks": 3074,
+      "late_blocks": 0,
+      "mean_npu_ms_weighted": 104.11646616785947,
+      "pcm_p95_per_recording_range_ms": [
+        322.775,
+        323.599
+      ],
+      "content_p95_per_recording_range_ms": [
+        414.775,
+        415.599
+      ],
+      "max_estimated_content_age_ms": 433.823
+    },
+    "balanced": {
+      "blocks": 3435,
+      "late_blocks": 0,
+      "mean_npu_ms_weighted": 104.09208180494905,
+      "pcm_p95_per_recording_range_ms": [
+        307.039,
+        307.933
+      ],
+      "content_p95_per_recording_range_ms": [
+        399.039,
+        399.933
+      ],
+      "max_estimated_content_age_ms": 410.897
+    },
+    "limits": "File-input paced tests, not physical microphone/network. Content estimate adds measured ~92ms waveform displacement. DNSMOS is no-reference model prediction, not clean-ground-truth fidelity."
+  },
+  "profiles": {
+    "default": "quality",
+    "quality": {
+      "history_ms": 48,
+      "overlap_ms": 48,
+      "stride_ms": 152
+    },
+    "balanced": {
+      "history_ms": 64,
+      "overlap_ms": 48,
+      "stride_ms": 136
+    }
+  },
+  "production_binary_validation": {
+    "parity_sha256": "2a59f6b947e0b65e132b9ec06f918a7676564e94af5d1518c41a38f8bdeb70dc",
+    "frame_mismatch_rejected": true,
+    "release": "/userdata/temp/sl-clearvoice-t32-release-20261127",
+    "profiles": [
+      "quality",
+      "balanced"
+    ],
+    "trials_each": 2,
+    "AGC3": "bypass",
+    "model_sha256": "09211b69cfa8a193a9046df334c9ab6105562887c270030bef27507a98444684",
+    "parent_frame_mismatch_status": 1,
+    "correct_model_name_output_parity_sha256": "08b70277fe5e89c3398b6f218921a168856db0c6b42214b2163943fb4f5b0e7d",
+    "final_source_build_byte_identical": true
+  }
+}

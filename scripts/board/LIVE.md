@@ -2,6 +2,11 @@
 
 固定配置为 **UL-UNAS → NVIDIA SB 单步 → 实时 v4**。UL-UNAS 运行在 CPU，NVIDIA 原权重运行在 NPU。输入和输出均为 16 kHz、单声道、有符号 16 位小端 PCM。
 
+本文对应 UL-UNAS → NVIDIA → v4 的单声道运行包。当前 Audio3A 八麦主链
+使用 DPDFNet2、三级 AGC 和独立的 NVIDIA 子进程，T32 参数为 48 ms 历史、
+48 ms 交叠、152 ms 推进、dry=0。该主链入口见
+[src/audio3a/scripts/run_g7_wpe_dpdfnet2_nvidia.sh](../../src/audio3a/scripts/run_g7_wpe_dpdfnet2_nvidia.sh)。
+
 ## 构建
 
 分别准备 RKNN Runtime 2.3.2、ONNX Runtime 1.17.1 的 AArch64 动态库和对应头文件，以及 AArch64 FFTW 单精度静态库。使用和目标板 glibc 兼容的交叉编译器。本版用 GCC Linaro 7.2.1 验证。
@@ -44,6 +49,11 @@ ffmpeg -v error -f s16le -ar 16000 -ac 1 -i output.pcm enhanced.wav
 ~~~
 
 ## 参数与板测
+
+当前T32文件含等价归一化算子优化，校验与数值验证见 [模型元数据](../../models/rknn/live/nvidia-t32-model.json)。
+下表是旧T32校验值 `cfd9b689…131b6` 与旧单麦链路的历史结果。
+Audio3A的实际参数、构建和计时范围见 [Audio3A说明](../../src/audio3a/README.md)，两种入口须分别验收。
+
 
 | 配置 | 窗口 | 历史 | 交叠 | 推进 | 默认 NPU 核 | PCM 整链 P95 |
 | --- | ---: | ---: | ---: | ---: | --- | ---: |

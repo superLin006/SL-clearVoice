@@ -1,88 +1,35 @@
 #!/usr/bin/env python3
-"""Quantify what each model actually does, instead of one blended DNSMOS.
+"""Compare board-matched model stages using DNSMOS and acoustic proxies.
 
-DPDFNet2 is the denoiser and NVIDIA SB is the dereverberator in the shipped
-chain, so they must be judged on different axes:
-
-  BAK  (background)  -> denoising capability
-  tail gap           -> dereverberation capability
-  SIG  (speech)      -> how much speech is damaged doing it
-
-Run on a controlled signal with known DRR so the dereverb number means something.
+Energy/tail values use per-output energy masks. They are not SNR, DRR or
+clean-reference fidelity scores; align stages and share an input-derived mask
+for a controlled cross-stage comparison.
 """
 import sys
+from t32_correct import t32_process, dns as score_dns
 import numpy as np
-import onnxruntime as ort
 import soundfile as sf
 from speechmos import dnsmos
 
 SR = 16000
-T32_ONNX = '/home/xh/itc_project/superlin/SL-clearVoice/out/model-study-20261123/nvidia/t32-original.onnx'
-DPDF_ONNX = '/home/xh/itc_project/superlin/Audio3A/models/onnx/dpdfnet/dpdfnet2.onnx'
-FRAMES = 32
-BINS = 256
-HOP = 128          # 32 frames * 128 = 4096-sample window (256 ms) per the board profile
-FFT = 512
 
 
 def read(p):
     x, sr = sf.read(p)
-    if x.ndim > 1:
-        x = x.mean(1)
+    if sr != SR or x.ndim != 1:
+        raise ValueError(f"{p}: expected mono 16 kHz stage WAV")
     return x.astype(np.float64)
 
 
 def run_t32(x):
-    """NVIDIA SB one-step, 32-frame window, 72 ms overlap equivalent."""
-    so = ort.SessionOptions()
-    so.intra_op_num_threads = 8
-    sess = ort.InferenceSession(T32_ONNX, so, providers=['CPUExecutionProvider'])
-    win = np.sqrt(np.hanning(FFT + 1)[:FFT])
-    ola = np.zeros(FFT)
-    out = np.zeros(len(x))
-    stride = (FRAMES - 18) * HOP       # 48 ms history + 72 ms overlap -> 128 ms advance
-    for pos in range(0, len(x) - FRAMES * HOP, stride):
-        seg = np.zeros(FRAMES * HOP)
-        seg[:] = x[pos:pos + FRAMES * HOP]
-        spec = np.zeros((BINS, FRAMES), dtype=complex)
-        for t in range(FRAMES):
-            buf = np.zeros(FFT)
-            buf[FFT - HOP:] = seg[t * HOP:(t + 1) * HOP]
-            spec[:, t] = np.fft.rfft(buf)[:BINS]
-        inp = np.stack([spec.real, spec.imag], 0)[None].astype(np.float32)
-        est = sess.run(None, {'spectrum': inp})[0]
-        s_out = est[0, 0] + 1j * est[0, 1]
-        # take the newest hop of the estimated window
-        frame = np.fft.irfft(s_out[:, -1], FFT) * win
-        out[pos:pos + HOP] += frame[FFT - HOP:]
-    return out
+    """Use the current board-matched T32 transform and streaming profile."""
+    return t32_process(x)
 
 
 def run_dpdfnet(x):
-    HOPD, NB = 160, 161
-    nfft = 2 * (NB - 1)
-    so = ort.SessionOptions()
-    so.intra_op_num_threads = 8
-    sess = ort.InferenceSession(DPDF_ONNX, so, providers=['CPUExecutionProvider'])
-    sd = int(np.prod(sess.get_inputs()[1].shape))
-    win = np.sqrt(np.hanning(nfft + 1)[:nfft])
-    ola = np.zeros(nfft); hist = np.zeros(nfft - HOPD)
-    state = np.zeros(sd, dtype=np.float32)
-    out = np.zeros(len(x))
-    for t in range(len(x) // HOPD):
-        cur = x[t * HOPD:(t + 1) * HOPD]
-        buf = np.concatenate([hist, cur]) * win
-        hist = cur
-        spec = np.fft.rfft(buf)[:NB]
-        si = np.stack([spec.real, spec.imag], -1)[None, None].astype(np.float32)
-        enh, state = sess.run(None, {'spec': si, 'state_in': state})
-        so_s = enh[0, 0, :, 0] + 1j * enh[0, 0, :, 1]
-        full = np.zeros(nfft // 2 + 1, dtype=complex); full[:NB] = so_s
-        y = np.fft.irfft(full, nfft) * win
-        ola += y
-        out[t * HOPD:(t + 1) * HOPD] = ola[:HOPD]
-        ola = np.concatenate([ola[HOPD:], np.zeros(HOPD)])
-    return out
+    """Use the board-matched window, model state and 256-sample FIFO."""
+    from dpdf_runner import process
+    return process(x)
 
 
 def tail_gap(x):
@@ -108,19 +55,14 @@ def noise_floor(x):
 
 
 def dns(x):
-    x = x.astype(np.float32)
-    pk = float(np.max(np.abs(x)))
-    if pk > 0.9:
-        x = x / pk * 0.9
-    r = dnsmos.run(x, sr=SR)
-    return r['sig_mos'], r['bak_mos']
+    return score_dns(x)
 
 
 def main():
     for p in sys.argv[1:]:
         x = read(p)
         print(f'\n=== {"/".join(p.split("/")[-4:-2])} ({len(x)/SR:.1f}s) ===')
-        print(f'{"处理":>22s}{"SIG":>8s}{"BAK":>8s}{"降噪能力":>10s}{"去混响":>9s}')
+        print(f'{"处理":>22s}{"SIG":>8s}{"BAK":>8s}{"能量落差":>10s}{"尾音代理":>9s}')
         sig, bak = dns(x)
         print(f'{"输入":>22s}{sig:>8.3f}{bak:>8.3f}{noise_floor(x):>10.1f}{tail_gap(x):>9.1f}')
 

@@ -4,59 +4,30 @@
 Uses the board-matched T32 runner (510-point FFT, per-block normalisation, 0.33
 power-law compression) so the ordering question is answered with the real model
 behaviour rather than a re-implementation.
+
+Energy/tail values are descriptive proxies with per-output energy masks.
+They are not SNR, DRR or clean-reference fidelity scores. Align audio and use
+a shared input-derived mask before interpreting changes as processing gains.
 """
-import importlib.util
-import os
-import sys
+import argparse
+from pathlib import Path
+from t32_correct import MODEL, t32_process
 
 import numpy as np
 import soundfile as sf
 
-WORK = '/tmp/nveval'
 SR = 16000
 
-_spec = importlib.util.spec_from_file_location('rn', os.path.join(WORK, 'run_nvidia.py'))
-m = importlib.util.module_from_spec(_spec)
-_spec.loader.exec_module(m)
 
-
-def t32(x, dry=0.025, overlap=72, history=48, frames=32):
-    est = m.OnnxEstimator(os.path.join(WORK, 't32-original.onnx'), 8)
-    pipe = m.Pipeline(frames, m.hann_window(), est, 0.0)
-    pcm = np.clip(np.rint(x * 32768.0), -32768, 32767).astype(np.int16)
-    r = pipe.process(pcm, int(history * 16), int(overlap * 16), dry)
-    return np.asarray(r[0], dtype=np.float64) / 32768.0
+def t32(x, dry=0.0, overlap=48, history=48, frames=32, model=None):
+    return t32_process(x, history_ms=history, overlap_ms=overlap,
+                       dry_gain=dry, frames=frames, model=model)
 
 
 def dpdf(x):
-    import onnxruntime as ort
-    HOPD, NB = 160, 161
-    nfft = 2 * (NB - 1)
-    so = ort.SessionOptions()
-    so.intra_op_num_threads = 8
-    s = ort.InferenceSession(os.path.join(WORK, 'dpdfnet2.onnx'), so,
-                             providers=['CPUExecutionProvider'])
-    sd = int(np.prod(s.get_inputs()[1].shape))
-    win = np.sqrt(np.hanning(nfft + 1)[:nfft])
-    ola = np.zeros(nfft)
-    hist = np.zeros(nfft - HOPD)
-    st = np.zeros(sd, dtype=np.float32)
-    out = np.zeros(len(x))
-    for t in range(len(x) // HOPD):
-        cur = x[t * HOPD:(t + 1) * HOPD]
-        buf = np.concatenate([hist, cur]) * win
-        hist = cur
-        sp = np.fft.rfft(buf)[:NB]
-        si = np.stack([sp.real, sp.imag], -1)[None, None].astype(np.float32)
-        e, st = s.run(None, {'spec': si, 'state_in': st})
-        z = e[0, 0, :, 0] + 1j * e[0, 0, :, 1]
-        full = np.zeros(nfft // 2 + 1, dtype=complex)
-        full[:NB] = z
-        y = np.fft.irfft(full, nfft) * win
-        ola += y
-        out[t * HOPD:(t + 1) * HOPD] = ola[:HOPD]
-        ola = np.concatenate([ola[HOPD:], np.zeros(HOPD)])
-    return out
+    """Use the board-matched window, model state and 256-sample FIFO."""
+    from dpdf_runner import process
+    return process(x)
 
 
 def fdb(x):
@@ -82,24 +53,25 @@ def noise_floor(x):
 
 
 def main():
-    outs = sys.argv[1] if len(sys.argv) > 1 else '/tmp/nveval/order_out'
-    os.makedirs(outs, exist_ok=True)
-    print(f'{"rec":>4s}{"顺序":>22s}{"降噪":>8s}{"去混响":>9s}')
-    for rec in '123456':
-        p = (f'/mnt/data/zjw/source/3308/Audio3A/recordings/20261124/'
-             f'{rec}/stages_g7_t32/00_raw_input_avg.wav')
-        x, _ = sf.read(p)
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("inputs", nargs="+", type=Path, help="Mono 16 kHz input, e.g. 07_transient_xover.wav")
+    parser.add_argument("--output", required=True, type=Path)
+    parser.add_argument("--model", default=MODEL)
+    args = parser.parse_args()
+    args.output.mkdir(parents=True, exist_ok=True)
+    print(f'{"rec":>24s}{"顺序":>22s}{"能量落差":>8s}{"尾音代理":>9s}')
+    for index, path in enumerate(args.inputs, 1):
+        x, sr = sf.read(path)
+        if sr != SR or x.ndim != 1:
+            parser.error(f"{path}: expected mono 16 kHz stage WAV")
         x = x.astype(np.float64)
-        d = dpdf(x)
-        a = t32(d)          # current: denoise -> dereverb
-        b = dpdf(t32(x))    # proposed: dereverb -> denoise
-        for name, tag, y in (('DPDF2→T32(当前)', 'cur', a),
-                             ('T32→DPDF2(提议)', 'new', b)):
-            print(f'{rec:>4s}{name:>22s}{noise_floor(y):>8.1f}{tail_gap(y):>9.1f}')
-            sf.write(os.path.join(outs, f'{rec}-{tag}.wav'),
+        a = t32(dpdf(x), model=args.model)
+        b = dpdf(t32(x, model=args.model))
+        for name, tag, y in (("DPDF2→T32", "cur", a), ("T32→DPDF2", "new", b)):
+            print(f"{path.name:>24s}{name:>22s}{noise_floor(y):>8.1f}{tail_gap(y):>9.1f}")
+            sf.write(args.output / f"{index:02d}-{path.stem}-{tag}.wav",
                      np.asarray(y, dtype=np.float32), SR)
-        print()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

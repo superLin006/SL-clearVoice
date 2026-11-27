@@ -15,18 +15,24 @@
 #include <sys/stat.h>
 #include <sys/wait.h>
 #include <errno.h>
+#include <limits.h>
+#include <stdatomic.h>
 #include "p2p_protocol.h"
 #include "linear_aec.h"
 #include "spatial_dereverb.h"
 #include "online_wpe.h"
 #include "neural_res_ans.h"
+#ifdef AUDIO3A_OPTIONAL_DENOISERS
 #include "dfnet3_ans.h"
+#endif
 #include "dpdfnet_ans.h"
 #include "adaptive_agc.h"
 #include "transient_crossover.h"
 #include "wav_file.h"
 #include "webrtc_vad/webrtc_vad.h"
+#ifdef AUDIO3A_OPTIONAL_DENOISERS
 #include "sherpa-onnx/c-api/c-api.h"
+#endif
 
 static volatile bool g_running = true;
 static volatile uint32_t g_last_far_timestamp_ms = 0;
@@ -182,6 +188,9 @@ typedef struct {
     char  offline_in_wav[256];
     char  offline_out_wav[256];
     char  dump_stages_dir[256];
+    bool offline_pace;
+    bool denoise_after_nvidia;
+    bool bypass_post_nvidia_agc;
     bool  debug_transient;
     bool  enable_dereverb;
     float dereverb_floor;
@@ -198,6 +207,9 @@ typedef struct {
     char  nvidia_bin_path[256];
     char  nvidia_model_path[256];
     int   nvidia_core_mask;
+    int   nvidia_frames;
+    int   nvidia_history_ms;
+    int   nvidia_overlap_ms;
     float nvidia_dry_gain;
 } DUTConfig;
 
@@ -277,9 +289,15 @@ typedef struct {
     AdaptiveAGC agc;
     AdaptiveAGC post_agc;
     TransientCrossover post_tc;
+    #ifdef AUDIO3A_OPTIONAL_DENOISERS
     DFNet3ANS dfnet3;
+    #endif
     DPDFNetANS dpdfnet;
+    #ifdef AUDIO3A_OPTIONAL_DENOISERS
     const SherpaOnnxOnlineSpeechDenoiser *gtcrn;
+    #else
+    const void *gtcrn;
+    #endif
     int hangover_counter;
     int dt_onset_streak;
     double ref_energy_env;
@@ -334,6 +352,7 @@ static void auto_select_update(DUTDspState *st,
            best, best_dr, st->asel_frame * 0.016f);
 }
 
+#ifdef AUDIO3A_OPTIONAL_DENOISERS
 static bool resolve_dfnet_model_path(const char *explicit_path, char *out_path, size_t out_size) {
     if (explicit_path && explicit_path[0] != '\0') {
         if (access(explicit_path, R_OK) == 0) {
@@ -423,6 +442,8 @@ static bool resolve_gtcrn_model_path(const char *explicit_path, char *out_path, 
     }
     return false;
 }
+
+#endif
 
 static bool resolve_dpdfnet_model_path(const char *explicit_path, char *out_path, size_t out_size) {
     if (explicit_path && explicit_path[0] != '\0') {
@@ -589,9 +610,28 @@ typedef struct {
     WavFile *out_wav;
     AdaptiveAGC post_nv_agc;
     int post_nv_hangover;
+    DPDFNetANS *post_denoiser;
+    _Atomic double input_clock_ms;
+    double lag_ms[65536], max_lag_ms;
+    size_t lag_count;
+    uint64_t output_samples;
+
 } NvidiaBridge;
 
 static NvidiaBridge g_nv_bridge;
+static double monotonic_ms(void) {
+    struct timespec t;
+    clock_gettime(CLOCK_MONOTONIC, &t);
+    return 1000.0*t.tv_sec+t.tv_nsec*1e-6;
+}
+static void pace_to(double target) {
+    struct timespec t={(time_t)(target/1000),0};
+    t.tv_nsec=(long)((target-t.tv_sec*1000.0)*1e6);
+    int e;
+    do { e=clock_nanosleep(CLOCK_MONOTONIC,TIMER_ABSTIME,&t,NULL); } while(e==EINTR);
+    if(e) { fprintf(stderr,"Pacing failed: %d\n",e); exit(1); }
+}
+
 
 static const float kNvidiaPostInitGainLinear = 1.68f; /* +4.5 dB initial makeup baseline after NVIDIA ODE */
 
@@ -609,6 +649,7 @@ typedef enum {
     STAGE_10_SMOOTH_GATE,
     STAGE_11_NVIDIA_ODE_RAW,
     STAGE_12_FINAL_OUTPUT,
+    STAGE_13_POST_NV_ANS,
     STAGE_COUNT
 } StageIndex;
 
@@ -632,7 +673,8 @@ static const char *kStageFileNames[STAGE_COUNT] = {
     "09_post_agc.wav",
     "10_smooth_gate.wav",
     "11_nvidia_ode_raw.wav",
-    "12_final_output.wav"
+    "12_final_output.wav",
+    "13_post_nvidia_ans.wav"
 };
 
 static bool stage_dump_open(const char *dir) {
@@ -703,6 +745,25 @@ static void apply_nvidia_post_leveling(NvidiaBridge *b, int16_t *pcm, int count)
     AdaptiveAGC_ProcessInt16(&b->post_nv_agc, pcm, pcm, count);
 }
 
+static void process_nvidia_output(NvidiaBridge *b,int16_t *pcm,int count) {
+    if(b->post_denoiser) {
+        DPDFNetANS_ProcessInt16(b->post_denoiser,pcm,pcm,count);
+        stage_dump_write(STAGE_13_POST_NV_ANS,pcm,count);
+    }
+    if(!g_cfg.bypass_post_nvidia_agc) apply_nvidia_post_leveling(b,pcm,count);
+    if(b->input_clock_ms>0) {
+        double lag=monotonic_ms()-b->input_clock_ms-b->output_samples/16.0;
+        b->lag_ms[b->lag_count%65536]=lag;
+        b->lag_count++;
+        if(lag>b->max_lag_ms) b->max_lag_ms=lag;
+    }
+    b->output_samples+=count;
+}
+static int cmp_lag(const void *a,const void *b) {
+    double x=*(const double*)a,y=*(const double*)b;
+    return (x>y)-(x<y);
+}
+
 static void init_mic_gains(float gain_tbl[MAX_MIC_CHANNELS], int num_mics,
                            bool has_custom_gains, const float custom_gains[MAX_MIC_CHANNELS]) {
     /* Calibrated 8-Mic EQ table for RK3588 hw:3,0 PDM capture (-72~-82 dBFS raw -> -30 dBFS balanced, <0.3 dB spread) */
@@ -739,7 +800,7 @@ static void* nvidia_online_reader_thread(void *arg) {
         }
         if (!b->running) break;
 
-        apply_nvidia_post_leveling(b, frame, P2P_FRAME_SAMPLES);
+        process_nvidia_output(b, frame, P2P_FRAME_SAMPLES);
 
         if (b->fp_record_clean) {
             fwrite(frame, sizeof(int16_t), P2P_FRAME_SAMPLES, b->fp_record_clean);
@@ -783,7 +844,7 @@ static void* nvidia_offline_reader_thread(void *arg) {
             int valid_samples = (int)(valid_bytes / sizeof(int16_t));
             if (valid_samples > 0) {
                 stage_dump_write(STAGE_11_NVIDIA_ODE_RAW, frame, valid_samples);
-                apply_nvidia_post_leveling(b, frame, valid_samples);
+                process_nvidia_output(b, frame, valid_samples);
                 stage_dump_write(STAGE_12_FINAL_OUTPUT, frame, valid_samples);
                 if (b->out_wav) {
                     WavFile_WriteInt16(b->out_wav, frame, valid_samples);
@@ -793,7 +854,7 @@ static void* nvidia_offline_reader_thread(void *arg) {
             break;
         }
         stage_dump_write(STAGE_11_NVIDIA_ODE_RAW, frame, P2P_FRAME_SAMPLES);
-        apply_nvidia_post_leveling(b, frame, P2P_FRAME_SAMPLES);
+        process_nvidia_output(b, frame, P2P_FRAME_SAMPLES);
         stage_dump_write(STAGE_12_FINAL_OUTPUT, frame, P2P_FRAME_SAMPLES);
         if (b->out_wav) {
             WavFile_WriteInt16(b->out_wav, frame, P2P_FRAME_SAMPLES);
@@ -805,11 +866,12 @@ static void* nvidia_offline_reader_thread(void *arg) {
 
 static bool nvidia_bridge_start(NvidiaBridge *b, const char *model_path, const char *bin_path,
                                 int core_mask, float dry_gain, bool is_offline,
-                                int send_sock, FILE *fp_record_clean, WavFile *out_wav) {
+                                int send_sock, FILE *fp_record_clean, WavFile *out_wav, DPDFNetANS *post_denoiser) {
     memset(b, 0, sizeof(*b));
     b->send_sock = send_sock;
     b->fp_record_clean = fp_record_clean;
     b->out_wav = out_wav;
+    b->post_denoiser = post_denoiser;
 
     AGCConfig nv_agc_cfg;
     AdaptiveAGC_GetDefaultConfig(&nv_agc_cfg);
@@ -866,12 +928,11 @@ static bool nvidia_bridge_start(NvidiaBridge *b, const char *model_path, const c
         setenv("SB_RKNN_CORE_MASK", env_mask, 1);
         setenv("SB_DRY_GAIN", env_dry, 1);
 
-        /* Tuned for guaranteed over_budget=0 under full 8-mic WPE + DPDFNet2 + NPU concurrency:
-         * - T32 (default): overlap_ms=48, history_ms=48 (248ms window, 152ms stride, 3-core NPU)
-         * - T16 (low-latency): overlap_ms=8, history_ms=16 (120ms window, 96ms stride) */
-        bool is_t32 = (strstr(model_path, "t32") != NULL || strstr(model_path, "T32") != NULL);
-        const char *overlap_arg = is_t32 ? "48" : "8";
-        const char *history_arg = is_t32 ? "48" : "16";
+        char overlap_arg[16], history_arg[16], expected_frames[16];
+        snprintf(overlap_arg, sizeof(overlap_arg), "%d", g_cfg.nvidia_overlap_ms);
+        snprintf(history_arg, sizeof(history_arg), "%d", g_cfg.nvidia_history_ms);
+        snprintf(expected_frames, sizeof(expected_frames), "%d", g_cfg.nvidia_frames);
+        setenv("SB_EXPECT_FRAMES", expected_frames, 1);
         execl(bin_path, bin_path, model_path, overlap_arg, history_arg, NULL);
         fprintf(stderr, "[Child Error] execl failed for %s: %s\n", bin_path, strerror(errno));
         _exit(127);
@@ -889,9 +950,9 @@ static bool nvidia_bridge_start(NvidiaBridge *b, const char *model_path, const c
     } else {
         pthread_create(&b->thread, NULL, nvidia_online_reader_thread, b);
     }
-    bool is_t32_log = (strstr(model_path, "t32") != NULL || strstr(model_path, "T32") != NULL);
-    printf("[DUT-Main] Nvidia ODE Neural Dereverb Active (%s, overlap=%s, history=%s): bin=%s model=%s (core_mask=%d, dry_gain=%.3f)\n",
-           is_t32_log ? "T32" : "T16", is_t32_log ? "48ms" : "8ms", is_t32_log ? "48ms" : "16ms",
+    printf("[DUT-Main] Nvidia ODE Neural Dereverb Active (T%d, overlap=%dms, history=%dms, stride=%dms): bin=%s model=%s (core_mask=%d, dry_gain=%.3f)\n",
+           g_cfg.nvidia_frames, g_cfg.nvidia_overlap_ms, g_cfg.nvidia_history_ms,
+           8 * (g_cfg.nvidia_frames - 1) - g_cfg.nvidia_history_ms - g_cfg.nvidia_overlap_ms,
            bin_path, model_path, core_mask, dry_gain);
     return true;
 }
@@ -914,6 +975,16 @@ static void nvidia_bridge_stop(NvidiaBridge *b) {
         int status;
         waitpid(b->pid, &status, 0);
         b->pid = 0;
+        if(!WIFEXITED(status) || WEXITSTATUS(status)!=0) {
+            fprintf(stderr,"NVIDIA worker failed\n"); exit(1);
+        }
+    }
+    if(b->lag_count) {
+        size_t n=b->lag_count<65536?b->lag_count:65536;
+        qsort(b->lag_ms,n,sizeof(double),cmp_lag);
+        fprintf(stderr,"{\"output_samples\":%llu,\"availability_p95_ms\":%.3f,\"availability_max_ms\":%.3f,\"order\":\"%s\"}\n",
+            (unsigned long long)b->output_samples,b->lag_ms[(size_t)(.95*(n-1))],b->max_lag_ms,
+            b->post_denoiser?"nvidia-dpdf":"dpdf-nvidia");
     }
     b->running = false;
 }
@@ -983,6 +1054,7 @@ static int dut_dsp_init(DUTDspState *st, int num_mics, int selected_mic_idx,
     }
 
     /* 3. Causal Streaming Neural Speech Denoiser (DeepFilterNet 3 or GTCRN) */
+#ifdef AUDIO3A_OPTIONAL_DENOISERS
     bool try_dfnet3 = (ans_backend == ANS_BACKEND_DFNET3 || ans_backend == ANS_BACKEND_AUTO);
     if (try_dfnet3) {
         char df_path[512];
@@ -999,6 +1071,14 @@ static int dut_dsp_init(DUTDspState *st, int num_mics, int selected_mic_idx,
         }
     }
 
+#else
+    if (ans_backend == ANS_BACKEND_DFNET3 || ans_backend == ANS_BACKEND_GTCRN) {
+        fprintf(stderr, "This build supports --ans dpdfnet or rnnoise; optional backends are disabled.\n");
+        exit(2);
+    }
+    (void)dfnet_model_override; (void)dfnet_atten_lim; (void)dfnet_pf_beta;
+    (void)gtcrn_model_override; (void)enable_gtcrn;
+#endif
     bool try_dpdfnet = (!st->use_dfnet3 && ans_backend == ANS_BACKEND_DPDFNET);
     if (try_dpdfnet) {
         char dp_path[512];
@@ -1015,6 +1095,7 @@ static int dut_dsp_init(DUTDspState *st, int num_mics, int selected_mic_idx,
         }
     }
 
+#ifdef AUDIO3A_OPTIONAL_DENOISERS
     bool try_gtcrn = (!st->use_dfnet3 && !st->use_dpdfnet && ans_backend != ANS_BACKEND_RNNOISE && enable_gtcrn);
     if (try_gtcrn) {
         char model_path[512];
@@ -1049,6 +1130,8 @@ static int dut_dsp_init(DUTDspState *st, int num_mics, int selected_mic_idx,
     } else if (ans_backend == ANS_BACKEND_RNNOISE || (!st->use_dfnet3 && !st->use_dpdfnet && !enable_gtcrn)) {
         printf("[DUT-Main] Neural post-ANS set to RNNoise fallback.\n");
     }
+
+#endif
 
     /* 4. Neural RES (+ RNNoise fallback ANS only when DFNet3/DPDFNet/GTCRN are inactive) */
     NeuralConfig neural_cfg;
@@ -1165,7 +1248,9 @@ static void dut_dsp_destroy(DUTDspState *st) {
         SpatialDereverb_Reset(&st->dereverb);
     }
     if (st->use_dfnet3) {
+#ifdef AUDIO3A_OPTIONAL_DENOISERS
         DFNet3ANS_Destroy(&st->dfnet3);
+#endif
         st->use_dfnet3 = false;
     }
     if (st->use_dpdfnet) {
@@ -1173,7 +1258,9 @@ static void dut_dsp_destroy(DUTDspState *st) {
         st->use_dpdfnet = false;
     }
     if (st->gtcrn) {
+#ifdef AUDIO3A_OPTIONAL_DENOISERS
         SherpaOnnxDestroyOnlineSpeechDenoiser(st->gtcrn);
+#endif
         st->gtcrn = NULL;
     }
     NeuralRESANS_Destroy(&st->neural_engine);
@@ -1489,10 +1576,14 @@ static void dut_dsp_process_frame(DUTDspState *st,
     stage_dump_write(STAGE_07_TRANSIENT_XOVER, clean_out, P2P_FRAME_SAMPLES);
 
     if (st->use_dfnet3) {
+#ifdef AUDIO3A_OPTIONAL_DENOISERS
         DFNet3ANS_ProcessInt16(&st->dfnet3, clean_out, clean_out, P2P_FRAME_SAMPLES);
-    } else if (st->use_dpdfnet) {
+#endif
+    } else if (st->use_dpdfnet && !g_cfg.denoise_after_nvidia) {
         DPDFNetANS_ProcessInt16(&st->dpdfnet, clean_out, clean_out, P2P_FRAME_SAMPLES);
-    } else if (st->gtcrn) {
+    }
+#ifdef AUDIO3A_OPTIONAL_DENOISERS
+    else if (st->gtcrn) {
         float gtcrn_in[P2P_FRAME_SAMPLES];
         for (int i = 0; i < P2P_FRAME_SAMPLES; ++i) {
             gtcrn_in[i] = (float)clean_out[i] / 32768.0f;
@@ -1514,6 +1605,7 @@ static void dut_dsp_process_frame(DUTDspState *st,
             SherpaOnnxDestroyDenoisedAudio(denoised);
         }
     }
+#endif
     stage_dump_write(STAGE_08_POST_ANS, clean_out, P2P_FRAME_SAMPLES);
 
     /* 6b. Stage-2 Post-ANS Broadcast AGC (runs on denoised speech -> levels 1m~5m accurately) */
@@ -1602,6 +1694,15 @@ static int cmp_double_asc(const void *a, const void *b) {
     return (da > db) - (da < db);
 }
 
+static bool parse_nonnegative_int(const char *text, int *value) {
+    char *end = NULL;
+    errno = 0;
+    long parsed = strtol(text, &end, 10);
+    if (errno || end == text || *end || parsed < 0 || parsed > INT_MAX) return false;
+    *value = (int)parsed;
+    return true;
+}
+
 int main(int argc, char **argv) {
     setvbuf(stdout, NULL, _IONBF, 0);
     setvbuf(stderr, NULL, _IONBF, 0);
@@ -1635,6 +1736,9 @@ int main(int argc, char **argv) {
     g_cfg.agc_max_boost_db = 40.0f;
     g_cfg.enable_nvidia = false;
     g_cfg.nvidia_core_mask = 7;
+    g_cfg.nvidia_frames = 32;
+    g_cfg.nvidia_history_ms = -1;
+    g_cfg.nvidia_overlap_ms = -1;
     g_cfg.nvidia_dry_gain = 0.0f;
 
     float custom_gains[MAX_MIC_CHANNELS];
@@ -1786,10 +1890,31 @@ int main(int argc, char **argv) {
         } else if (strcmp(argv[i], "--nvidia-bin") == 0 && i + 1 < argc) {
             strncpy(g_cfg.nvidia_bin_path, argv[++i], sizeof(g_cfg.nvidia_bin_path) - 1);
             g_cfg.enable_nvidia = true;
+        } else if (strcmp(argv[i], "--nvidia-frames") == 0 ||
+                   strcmp(argv[i], "--nvidia-history-ms") == 0 ||
+                   strcmp(argv[i], "--nvidia-overlap-ms") == 0) {
+            const char *option = argv[i];
+            int value;
+            if (i + 1 >= argc || !parse_nonnegative_int(argv[++i], &value)) {
+                fprintf(stderr, "%s requires a nonnegative integer\n", option);
+                return 2;
+            }
+            if (strcmp(option, "--nvidia-frames") == 0) g_cfg.nvidia_frames = value;
+            else if (strcmp(option, "--nvidia-history-ms") == 0) g_cfg.nvidia_history_ms = value;
+            else g_cfg.nvidia_overlap_ms = value;
         } else if (strcmp(argv[i], "--nvidia-core-mask") == 0 && i + 1 < argc) {
             g_cfg.nvidia_core_mask = atoi(argv[++i]);
         } else if (strcmp(argv[i], "--nvidia-dry-gain") == 0 && i + 1 < argc) {
             g_cfg.nvidia_dry_gain = (float)atof(argv[++i]);
+        } else if (strcmp(argv[i], "--pace") == 0) {
+            g_cfg.offline_pace = true;
+        } else if (strcmp(argv[i], "--bypass-post-nvidia-agc") == 0) {
+            g_cfg.bypass_post_nvidia_agc = true;
+        } else if (strcmp(argv[i], "--post-nvidia-agc") == 0) {
+            g_cfg.bypass_post_nvidia_agc = false;
+
+        } else if (strcmp(argv[i], "--denoise-after-nvidia") == 0) {
+            g_cfg.denoise_after_nvidia = true;
         } else if (strcmp(argv[i], "--offline-wav") == 0 && i + 2 < argc) {
             strncpy(g_cfg.offline_in_wav, argv[++i], sizeof(g_cfg.offline_in_wav) - 1);
             strncpy(g_cfg.offline_out_wav, argv[++i], sizeof(g_cfg.offline_out_wav) - 1);
@@ -1798,8 +1923,22 @@ int main(int argc, char **argv) {
         }
     }
 
+    if (g_cfg.nvidia_frames != 16 && g_cfg.nvidia_frames != 32) {
+        fprintf(stderr, "--nvidia-frames must be 16 or 32\n");
+        return 2;
+    }
+    if (g_cfg.nvidia_history_ms < 0) g_cfg.nvidia_history_ms = g_cfg.nvidia_frames == 32 ? 48 : 16;
+    if (g_cfg.nvidia_overlap_ms < 0) g_cfg.nvidia_overlap_ms = g_cfg.nvidia_frames == 32 ? 48 : 8;
+    int nvidia_window_ms = 8 * (g_cfg.nvidia_frames - 1);
+    if (g_cfg.nvidia_history_ms % 8 || g_cfg.nvidia_overlap_ms % 8 ||
+        g_cfg.nvidia_history_ms >= nvidia_window_ms ||
+        g_cfg.nvidia_overlap_ms > (nvidia_window_ms - g_cfg.nvidia_history_ms) / 2) {
+        fprintf(stderr, "NVIDIA history/overlap must be multiples of 8ms with history + 2*overlap <= window\n");
+        return 2;
+    }
+
     if (g_cfg.offline_in_wav[0] != '\0' && !explicit_gain_override) {
-        /* Raw recorded WAVs (/tmp/dut_raw10ch.wav) already store post-calibrated PCM */
+        /* Replay preserves file samples; apply input gain only when explicitly requested. */
         g_cfg.mic_pregain = 1.0f;
         g_cfg.use_calib_table = false;
     }
@@ -1847,6 +1986,14 @@ int main(int argc, char **argv) {
            g_cfg.nvidia_core_mask, g_cfg.nvidia_dry_gain);
     printf("==============================================================\n\n");
 
+    if(g_cfg.denoise_after_nvidia &&
+       (!g_cfg.enable_nvidia || g_cfg.ans_backend!=ANS_BACKEND_DPDFNET)) {
+        fprintf(stderr,"--denoise-after-nvidia requires --nvidia --ans dpdfnet\n");
+        return 2;
+    }
+    if(g_cfg.offline_pace && !g_cfg.offline_in_wav[0]) {
+        fprintf(stderr,"--pace is for --offline-wav replay\n"); return 2;
+    }
     net_fifo_init(&g_net_fifo);
     delay_line_init(&g_ref_delay_line);
 
@@ -1865,6 +2012,9 @@ int main(int argc, char **argv) {
     }
 
     /* Optional Offline Multi-Channel WAV Mode (shares identical DSP pipeline with live P2P) */
+    if(g_cfg.ans_backend==ANS_BACKEND_DPDFNET && !dsp.use_dpdfnet) {
+        fprintf(stderr,"Required DPDFNet backend unavailable\n"); dut_dsp_destroy(&dsp);return 1;
+    }
     if (g_cfg.offline_in_wav[0] != '\0') {
         WavFile *in_wav = WavFile_OpenRead(g_cfg.offline_in_wav);
         if (!in_wav) {
@@ -1895,12 +2045,13 @@ int main(int argc, char **argv) {
             char nv_model[512] = "", nv_bin[512] = "";
             if (!resolve_nvidia_model_path(g_cfg.nvidia_model_path, nv_model, sizeof(nv_model)) ||
                 !resolve_nvidia_bin_path(g_cfg.nvidia_bin_path, nv_bin, sizeof(nv_bin))) {
-                fprintf(stderr, "[Warning] Nvidia model or bin not found, bypassing Nvidia stage\n");
-                g_cfg.enable_nvidia = false;
+                fprintf(stderr, "[Error] Required NVIDIA model or executable not found\n");
+                exit(1);
             } else {
                 nvidia_bridge_start(&g_nv_bridge, nv_model, nv_bin,
                                     g_cfg.nvidia_core_mask, g_cfg.nvidia_dry_gain,
-                                    true, -1, NULL, out_wav);
+                                    true, -1, NULL, out_wav,
+                                    g_cfg.denoise_after_nvidia ? &dsp.dpdfnet : NULL);
             }
         }
 
@@ -1910,7 +2061,11 @@ int main(int argc, char **argv) {
         double max_ms = 0.0;
         uint32_t over16 = 0;
         uint32_t frames = 0;
+        if(g_cfg.offline_pace) usleep(800000);
+        double input_clock=monotonic_ms();
+        if(g_cfg.offline_pace) g_nv_bridge.input_clock_ms=input_clock;
         while (WavFile_ReadInt16(in_wav, raw_buf, P2P_FRAME_SAMPLES) == P2P_FRAME_SAMPLES) {
+            if(g_cfg.offline_pace) pace_to(input_clock+(frames+1)*16.0);
             if (g_stage_dump.enabled) {
                 int16_t raw_avg[P2P_FRAME_SAMPLES];
                 int active_ch = (num_mics < in_ch) ? num_mics : in_ch;
@@ -2092,12 +2247,13 @@ int main(int argc, char **argv) {
         char nv_model[512] = "", nv_bin[512] = "";
         if (!resolve_nvidia_model_path(g_cfg.nvidia_model_path, nv_model, sizeof(nv_model)) ||
             !resolve_nvidia_bin_path(g_cfg.nvidia_bin_path, nv_bin, sizeof(nv_bin))) {
-            fprintf(stderr, "[Warning] Nvidia model or bin not found, bypassing Nvidia stage\n");
-            g_cfg.enable_nvidia = false;
+            fprintf(stderr, "[Error] Required NVIDIA model or executable not found\n");
+            exit(1);
         } else {
             nvidia_bridge_start(&g_nv_bridge, nv_model, nv_bin,
                                 g_cfg.nvidia_core_mask, g_cfg.nvidia_dry_gain,
-                                false, send_sock, fp_record_clean, NULL);
+                                false, send_sock, fp_record_clean, NULL,
+                                g_cfg.denoise_after_nvidia ? &dsp.dpdfnet : NULL);
         }
     }
 
@@ -2155,11 +2311,11 @@ int main(int argc, char **argv) {
                 if (val > 32767) val = 32767;
                 if (val < -32768) val = -32768;
                 mic_ch[m][i] = (int16_t)val;
-                mic_raw[i * g_cfg.mic_channels + raw_ch] = (int16_t)val;
+
             }
         }
 
-        /* Record post-calibrated raw multi-channel frames (audible in Audacity & matching offline replay) */
+        /* Record unchanged capture samples; calibration belongs to mic_ch only */
         if (s_recording_started && fp_record_raw) {
             fwrite(mic_raw, sizeof(int16_t), P2P_FRAME_SAMPLES * g_cfg.mic_channels, fp_record_raw);
         }

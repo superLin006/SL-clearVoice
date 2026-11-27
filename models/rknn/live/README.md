@@ -4,7 +4,7 @@
 | --- | --- | --- |
 | ulunas_stream_simple.onnx | UL-UNAS 流式降噪，外部保存三组模型状态 | AArch64 ONNX Runtime 1.17.1，CPU |
 | nvidia-t16-spatial-norm.rknn | NVIDIA SB 一步估计器，输入 `1×2×256×16` 复数频谱 | RKNN Runtime 2.3.2，RK3588 NPU |
-| [nvidia-t32-spatial-norm.rknn](nvidia-t32-spatial-norm.rknn) | 默认配置，32 帧输入，三核运行 | RKNN Runtime 2.3.2，RK3588 NPU |
+| [nvidia-t32-spatial-norm.rknn](nvidia-t32-spatial-norm.rknn) | 当前 T32：原权重，归一化算子优化，三核运行 | 已验收 Runtime 2.5.0，RK3588 NPU |
 
 这里保存板端验收过的模型。部署前在本目录运行 `sha256sum -c SHA256SUMS`。
 
@@ -22,10 +22,19 @@ python scripts/npu/export_nvidia_sb_live.py /path/to/se_der_sb_16k_small.nemo ou
 python scripts/npu/build_nvidia_sb_live_rknn.py out/nvidia-t16-spatial-norm.onnx
 ~~~
 
-仓库随附的 T32 来自 T32 / 72 ms 交叠的板测运行包。重建时使用同一检查点和构建工具。验收文件的 SHA256 为 `cfd9b689b665754a06057836eab11f0659226b60da7331aa245b2f06965131b6`。构建运行包时会为传入的模型生成校验值。
+当前 T32 的 SHA256 为 `09211b69cfa8a193a9046df334c9ab6105562887c270030bef27507a98444684`。
+原检查点、单步条件与输入维度不变。此次只等价改写归一化统计和仿射计算，未训练新权重，
+未启用高斯采样。逻辑输入仍是 `1×2×256×32`，运行时会查询并校验实际帧数。
+旧 T32 的 SHA 为 `cfd9b689…131b6`；T16 保留历史版本，未在本轮重新编译。
+
+数学检查、实际 FP16 张量误差和重建信息见 [模型元数据](nvidia-t32-model.json)。
+流水线通过 `--nvidia-frames`、`--nvidia-history-ms`、`--nvidia-overlap-ms` 指定几何，
+不再根据模型文件名猜测 T16/T32。Audio3A 与旧单麦实时入口的窗口设置分别见各自 README。
 
 ~~~sh
 mkdir -p out
 python scripts/npu/export_nvidia_sb_live.py --frames 32 /path/to/se_der_sb_16k_small.nemo out/nvidia-t32-spatial-norm.onnx
 python scripts/npu/build_nvidia_sb_live_rknn.py out/nvidia-t32-spatial-norm.onnx
 ~~~
+
+六段全长板测、两档延迟、原生50步差距和部署入口见[当前验收报告](../../../docs/reviews/2026-11-27-t32-operator-validation.md)。旧文档中的72ms单块推理属于历史测试，本轮整链NPU均值约104ms，不作为可复现指标沿用。
